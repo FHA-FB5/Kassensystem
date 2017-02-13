@@ -1,0 +1,111 @@
+body {
+	background-color: #01050f;
+	color: #edebec;
+	font-family: Helvetica, sans-serif;
+}
+
+
+.box {
+	border-radius: 15px;
+	background-color: #0b1b40;
+	box-shadow: 0px 0px 10px 0px black;
+	padding: 10px;
+	margin: 7px;
+	width: 140px;
+	height: auto;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	cursor: pointer;
+}
+
+a.box, h1 a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.boximage {
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: center;
+	width: 100%;
+	height: 100px;
+}
+
+#userimg .boximage {
+	width: 200px;
+	height: 200px;
+}
+
+#userview {
+	display: flex;
+}
+
+#userinfo {
+	margin: 20px;
+}
+
+#userimg {
+	margin: 20px;
+	min-width: 200px;
+	min-height: 200px;
+}
+
+.box span {
+	text-align: center;
+}
+
+.boxspan {
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+}
+
+#userimg .boximage {
+	width: 200px;
+	height: 200px;
+}
+
+#userbalance {
+	border-radius: 1em;
+	margin: 0.1em;
+	padding: 0.5em 0.8em;
+	display: inline-block;
+}
+#userbalance[data-level="bad"] {
+	background-color: #FF282D;
+	color: black;
+}
+#userbalance[data-level="negative"] {
+	color: #FF484D;
+}
+#userbalance[data-level="positive"] {
+	color: #0DAF07;
+}
+#userbalance[data-level="great"] {
+	background-color: #0D8F07;
+	color: black;
+}
+.button, button {
+	cursor: pointer;
+	background-color: #444444;
+	color: white;
+	border-width: 0px;
+	border-radius: 1em;
+	padding: 0.5em 0.8em;
+	margin: 0.1em;
+	font-size: 1em;
+	text-decoration: none;
+}
+
+.panel-default > .panel-heading {
+	background-color: #333;
+}
+.panel-title {
+	color: #edebec;
+}
+
+.panel-default {
+	background-color: #01050f;
+	border-color: #444;
+}

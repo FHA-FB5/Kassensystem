@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+	{% for u in allusers|sort(attribute='name') %}
+	<a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
+		<div class="boximage" style="background-image: url('https://www.gravatar.com/avatar/{{ u.mail|lower|md5 }}?s=200&d=blank&r=x');">
+		</div>
+		<div class="boxspan">
+			<span>{{ u.name }}</span>
+		</div>
+	</a>
+	{% endfor %}
+</div>
+{% endblock %}
