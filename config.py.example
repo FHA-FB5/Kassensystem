@@ -1,1 +1,3 @@
 DEBUG = True
+SQLITE_DB = "db.sqlite"
+SECRET_KEY = "jsue51SlySVPpg1ClE4ogVpjw0mljJjxYZdR2nGfKa5UvbIUe7Eumy2iRBcMASMl"

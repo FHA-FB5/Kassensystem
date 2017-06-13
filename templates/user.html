@@ -1,23 +1,46 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
-	<div id="userview" style="display: flex;">
-		<div id="userimg"><div class="boximage" style="background-image: rl('https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200');" ></div></div>
-		<div id="userinfo">
+	<div style="display: flex;">
+		<div id="userimg"><div class="boximage" style="background-image: url('https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200');" ></div></div>
+		<div>
 			<div><h3 id="username">{{ user.name }}</h3></div>
-			<div><span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span><span id="userbalanceedit" class="button" style="margin-left: 10px;">Edit</span></div>
+			<div>
+				<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
+				<span id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</span>
+			</div>
+			<script>
+				$("#userbalanceedit").click(
+					function () {
+						var newbalance = parseInt(parseFloat(prompt("New balance:",{{ user.balance }}/100.0))*100);
+						jQuery.ajax({
+							method: "POST",
+							dataType: "text",
+							data: { 'newbalance': newbalance },
+							url: "{{ url_for('set_balance', name=user.name) }}",
+							success: function (data) {
+								window.location = "{{ request.url }}"
+							}
+						});
+
+					}
+				);
+			</script>
 			<div><span id="userlog"><h4>log:</h4></span></div>
 			<div id="userlogdiv">
-				<ul class="list-unstyled"">
+				<ul class="list-unstyled">
 				{% for i in log %}
 					<li class="logentry">
-						<input type="button" value="undo" class="undobtn button"> 
+						<a class="btn btn-default" href="{{ url_for('set_balance', name=user.name, newbalance=i.oldbalance) }}"><span class="fa fa-undo"></span> </a>
 						{{i.time}} 
 						{% if i.methode == "buy" %}
-						bought {{ (i.parameter|itemid).name }} for {{ (i.parameter|itemid).price|euro }}
-						{% endif %}
-						{% if i.methode == "recharge" %}
-						recharged balance with {{ (i.parameter|itemid).price|abs|euro }}
+						bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj).price|euro }}
+						{% elif i.methode == "recharge" %}
+						recharged balance with {{ (i.parameter|itemidtoobj).price|abs|euro }}
+						{% elif i.methode == "set_balance" %}
+						set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
+						{% else %}
+						something is broken
 						{% endif %}
 					</li>
 				{% endfor %}
@@ -38,8 +61,9 @@
 			<div id="group_{{ g.id }}" class="panel-collapse collapse in" aria-expanded="false">
 				<div class="panel-body row">
 					{% for i in items if i.group_id == g.id %}
-					<a href="{{ url_for('buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1" data-itemid="{{ i.id }}" style="height: 180px;">
-							<div class="boximage" style="background-image: rl('https://{{ i.pictureurl }}');"></div>
+					<a href="{{ url_for('buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" style="height: 180px;">
+							<div class="boximage" style="background-image: url('{{ url_for('get_img', itemid=i.picture_id) }}');"></div>
+
 							<div class="boxspan">
 								<span>{{ i.name }}</span>
 								<span>{{ i.price|euro }}</span>
@@ -52,4 +76,36 @@
 	</div>
 	{% endfor %}
 </div>
+<script>
+	var xhr;
+	$(".buylink").click(
+		function(e) {
+			return ; //fix me, need to reload log...
+			e.preventDefault();
+			jQuery.ajax({
+				method: "GET",
+				dataType: "text",
+				url: this.href,
+				data: {'noref': 1},
+				success: function (data) {
+					//reload balance
+					if(xhr && xhr.readyState != 4){
+						xhr.abort();
+					}
+					xhr = jQuery.ajax({
+						method: "GET",
+						dataType: "text",
+						url: "{{ url_for('get_balance', name=user.name)  }}",
+						success: function (data) {
+							$("#userbalance").text(data/100+"€");
+						}
+					});
+
+
+				}
+			});
+		}
+	);
+</script>
+
 {% endblock %}

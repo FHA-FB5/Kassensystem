@@ -19,31 +19,50 @@ config.from_pyfile('config.py.example', silent=True)
 if not config.get('SECRET_KEY', None):
         config['SECRET_KEY'] = os.urandom(32)
 
+db = sqlite3.connect(config['SQLITE_DB'])
+cur = db.cursor()
+cur.executescript(app.open_resource('schema.sql', mode='r').read())
+db.commit()
+db.close()
 
-def get_db():
-	db = getattr(g, '_database', None)
-	if db is None:
-		db = g._database = sqlite3.connect('db.sqlite')
-		db.row_factory = sqlite3.Row
-		db.cursor().executescript(app.open_resource('schema.sql', mode='r').read())
-		db.commit()
-	return db
+def get_dbcursor():
+	if 'db' not in g:
+		g.db = sqlite3.connect(config['SQLITE_DB'], detect_types=sqlite3.PARSE_DECLTYPES)
+		g.db.isolation_level = None
+	if not hasattr(request, 'db'):
+		request.db = g.db.cursor()
+	return request.db
+
+@app.teardown_request
+def commit_db(*args):
+	if hasattr(request, 'db'):
+		request.db.close()
+		g.db.commit()
 
 @app.teardown_appcontext
-def close_connection(exception):
-	db = getattr(g, '_database', None)
-	if db is not None:
-		db.commit()
-		db.close()
+def close_db(*args):
+	if 'db' in g:
+		g.db.close()
+		del g.db
 
-def query(query, args=(), one=False):
-	cur = get_db().execute(query, args)
-	rv = cur.fetchall()
-	cur.close()
-	res = [];
-	for l in rv:
-		res.append(dict(l))
-	return (res[0] if res else None) if one else res
+def query(operation, *params, delim="sep"):
+	cur = get_dbcursor()
+	cur.execute(operation, params)
+	rows = []
+	rows = cur.fetchall()
+	res = []
+	for row in rows:
+		res.append({})
+		ptr = res[-1]
+		for col, desc in zip(row, cur.description):
+			name = desc[0].split('.')[-1].split(':')[0]
+			if name == delim:
+				ptr = res[-1][col] = {}
+				continue
+			if type(col) == str:
+				col = col.replace('\\n', '\n').replace('\\r', '\r')
+			ptr[name] = col
+	return res
 
 @app.template_global()
 def isadmin(*args):
@@ -54,8 +73,8 @@ def md5(val):
 	return hashlib.md5(val.encode('ascii', 'ignore')).hexdigest()
 
 @app.template_filter()
-def itemid(val):
-	return query("SELECT * FROM item where id = ?", [val], True)
+def itemidtoobj(val):
+	return query("SELECT * FROM item where id = ?", val)[0]
 
 @app.template_filter()
 def euro(val):
@@ -87,36 +106,76 @@ def csrf_inject(endpoint, values):
 		return
 	values['_csrf_token'] = session['_csrf_token']
 
-def log_action(userid,old,new,methode,parameter):
-	user = query('SELECT * FROM user WHERE id = ?', [userid], True)
-	query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', [userid, methode, old, new, parameter])
+app.jinja_env.globals['navbar'] = []
+# iconlib can be 'bootstrap'
+# ( see: http://getbootstrap.com/components/#glyphicons )
+# or 'fa'
+# ( see: http://fontawesome.io/icons/ )
+def register_navbar(name, iconlib='bootstrap', icon=None):
+	def wrapper(func):
+		endpoint = func.__name__
+		app.jinja_env.globals['navbar'].append((endpoint, name, iconlib, icon, True))
+		return func
+	return wrapper
 
+def log_action(userid,old,new,methode,parameter):
+	user = query('SELECT * FROM user WHERE id = ?', userid)[0]
+	print([userid, methode, old, new, parameter])
+	query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
+
+@register_navbar('Home', icon='home')
 @app.route("/")
 def index():
 	return render_template('index.html', allusers=query('SELECT * FROM user WHERE deleted=0'))
 
 @app.route("/u/<name>")
 def userpage(name):
-	user=query('SELECT * FROM user WHERE name = ?', [name], True)
-	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE user.name = ? order by log.time DESC limit 5', [name])
+	user=query('SELECT * FROM user WHERE name = ?', name)[0]
+	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE user.name = ? order by log.time DESC limit 5', name)
 	groups=query('SELECT * FROM "group" ORDER BY sortorder ')
 	items=query('SELECT * FROM "item" WHERE deleted=0 ')
 	return render_template('user.html', user=user, log=log, groups=groups, items=items )
 
-@app.route("/u/<name>/<itemid>")
+
+@app.route("/api/get_img/<int:itemid>")
+def get_img(name, itemid):
+	return 'OK'
+
+@app.route("/api/buy/<name>/<int:itemid>")
 @csrf_protect
 def buy(name, itemid):
-	user = query('SELECT * FROM user WHERE name = ?', [name], True)
+	user = query('SELECT * FROM user WHERE name = ?', name)[0]
 	if user:
-		query('UPDATE "user" SET balance = balance - (SELECT price FROM item WHERE id = ?) WHERE name = ?', [itemid, name])
-		usernew = query('SELECT * FROM user WHERE name = ?', [name], True)
-		if query('SELECT price FROM item WHERE id = ?', [itemid], True)['price'] > 0:
+		query('UPDATE user SET balance = balance - (SELECT price FROM item WHERE id = ?) WHERE name = ?', itemid, name)
+		usernew = query('SELECT * FROM user WHERE name = ?', name)[0]
+		if query('SELECT price FROM item WHERE id = ?', itemid)[0]['price'] > 0:
 			log_action(user['id'], user['balance'], usernew['balance'], 'buy', itemid)
 		else:
 			log_action(user['id'], user['balance'], usernew['balance'], 'recharge', itemid)
+	if request.values.get('noref', False):
+		return 'OK', 200
+	else:
+		return redirect(request.values.get('ref', url_for('userpage', name=name)))
+
+@app.route("/api/setbalance/<name>/<int:newbalance>", methods=['GET', 'POST'])
+@app.route("/api/setbalance/<name>", methods=['GET', 'POST'])
+@csrf_protect
+def set_balance(name, newbalance=None):
+	user = query('SELECT * FROM user WHERE name = ?', name)[0]
+	if user:
+		if not newbalance:
+			newbalance = request.values.get('newbalance', 0)
+		newbalance = int(newbalance)
+		query('UPDATE user SET balance = ? WHERE name = ?', newbalance, name)
+		log_action(user['id'], user['balance'], newbalance, 'set_balance', 0)
 	return redirect(request.values.get('ref', url_for('userpage', name=name)))
 
-@app.route("/login")
+@app.route("/api/userbalance/<name>")
+@csrf_protect
+def get_balance(name):
+	return str(query('SELECT balance FROM user WHERE name = ?', name)[0]['balance']),200
+
+@app.route("/login", methods=['GET', 'POST'])
 def login():
 	return "Test"
 

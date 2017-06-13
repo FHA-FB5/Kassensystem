@@ -15,10 +15,16 @@ CREATE TABLE IF NOT EXISTS 'item' (
 	id		integer primary key autoincrement,
 	name		varchar(255) default 'item',
 	group_id	integer default -1,
-	pictureurl	varchar(1024) default '',
+	picture_id	integer default -1,
+	price		integer default 0,
+	purchasingprice	integer default 0,
 	price		integer default 0,
 	info_public	text default '',
 	deleted		BOOLEAN NOT NULL default 0 CHECK (deleted IN (0,1))
+);
+CREATE TABLE IF NOT EXISTS 'pictures' (
+	id		integer primary key autoincrement,
+	data		blob
 );
 CREATE TABLE IF NOT EXISTS 'group' (
 	id		integer primary key autoincrement,

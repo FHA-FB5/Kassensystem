@@ -36,14 +36,6 @@ a.box, h1 a {
 	height: 200px;
 }
 
-#userview {
-	display: flex;
-}
-
-#userinfo {
-	margin: 20px;
-}
-
 #userimg {
 	margin: 20px;
 	min-width: 200px;
@@ -85,19 +77,10 @@ a.box, h1 a {
 	background-color: #0D8F07;
 	color: black;
 }
-.button, button {
-	background-color: #444444;
-	color: white;
-	border-width: 0px;
-	border-radius: 1em;
-	padding: 0.5em 0.8em;
-	margin: 0.1em;
-	font-size: 1em;
-	text-decoration: none;
-}
 
 .panel-default > .panel-heading {
 	background-color: #333;
+	border-color: #222;
 }
 .panel-title {
 	color: #edebec;
@@ -106,4 +89,10 @@ a.box, h1 a {
 .panel-default {
 	background-color: #01050f;
 	border-color: #444;
+}
+
+.btn {
+	background-color: #444;
+	color: white;
+	border-color: #222;
 }
