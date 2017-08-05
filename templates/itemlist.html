@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
-	<div class="col-xs-12">
+	<div class="col-xs-12 hidden-print">
 		<a class="btn btn-default" href="{{ url_for('itemlist', showdeleted={0: 1, 1:0}.get(request.values.get('showdeleted', 0))) }}">
 			{% if request.values.get('showdeleted', 0) %}
 				Hide deleted
@@ -15,17 +15,17 @@
 	</div>
 	{% for g in groups %}
 		<div class="col-xs-12">
-			<h2>{{ g.name }}</h2>
+			<h3>{{ g.name }}</h3>
 			<table class="table table-condensed table-inverse table-responsive">
 				<thead>
 					<tr>
 						<th>#</th>
 						<th>Name</th>
 						<th>Price</th>
-						<th>Purchasing price</th>
-						<th>Stock</th>
+						<th class="hidden-print">Purchasing price</th>
+						<th class="hidden-print">Stock</th>
 						<th>Info</th>
-						<th></th>
+						<th class="hidden-print"></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -34,10 +34,10 @@
 							<td>{{ i.id }}</td>
 							<td><img src="{{ url_for('get_img', imgid=i.picture_id) }}" class="itemlistimg" alt="product photo">  {{ i.name }}</td>
 							<td{% if not i.price %} style="background-color: grey;" title="calculated"{% endif %}>{{ i|itemprice|euro }}</td>
-							<td>{{ i.purchasingprice|euro }}</td>
-							<td>{{ i|itemstock }}</td>
+							<td class="hidden-print">{{ i.purchasingprice|euro }}</td>
+							<td class="hidden-print">{{ i|itemstock }}</td>
 							<td>{{ i.info_public }}</td>
-							<td>
+							<td class="hidden-print">
 								<ul class="pull-right list-inline">
 									<li><a class="btn btn-default btn-xs" href="{{ url_for('edititem', itemid=i.id) }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
 									<li><a class="btn btn-default btn-xs" href="{{ url_for('delitem', itemid=i.id, ref=request.url ) }}"><span class="glyphicon glyphicon-trash" {%if i.deleted %}style="color: red"{% endif %} aria-hidden="true"></span></a></li>
