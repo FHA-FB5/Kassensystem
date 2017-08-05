@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+	<div class="col-xs-12">
+		<a class="btn btn-default" href="{{ url_for('itemlist', showdeleted={0: 1, 1:0}.get(request.values.get('showdeleted', 0))) }}">
+			{% if request.values.get('showdeleted', 0) %}
+				Hide deleted
+			{% else %}
+				Show deleted
+			{% endif %}
+		</a>
+		<a class="btn btn-default" href="{{ url_for('additem') }}">
+			Add item
+		</a>
+	</div>
+	{% for g in groups %}
+		<div class="col-xs-12">
+			<h2>{{ g.name }}</h2>
+			<table class="table table-condensed table-inverse table-responsive">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Name</th>
+						<th>Verkaufspreis</th>
+						<th>Einkaufspreis</th>
+						<th>Lagerbestend</th>
+						<th>Info</th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for i in items if i.group_id == g.id %}
+					<tr id="itemrow_{{ i.id }}" {% if i.deleted %}style="background-color: #333;"{% endif %}>
+							<td>{{ i.id }}</td>
+							<td><img src="{{ url_for('get_img', imgid=i.picture_id) }}" class="itemlistimg" alt="product photo">  {{ i.name }}</td>
+							<td{% if not i.price %} style="background-color: grey;" title="calculated"{% endif %}>{{ i|itemprice|euro }}</td>
+							<td>{{ i.purchasingprice|euro }}</td>
+							<td>{{ i|itemstock }}</td>
+							<td>{{ i.info_public }}</td>
+							<td>
+								<ul class="pull-right list-inline">
+									<li><a class="btn btn-default btn-xs" href="{{ url_for('edititem', itemid=i.id) }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
+									<li><a class="btn btn-default btn-xs" href="{{ url_for('delitem', itemid=i.id) }}"><span class="glyphicon glyphicon-trash" {%if i.deleted %}style="color: red"{% endif %} aria-hidden="true"></span></a></li>
+								</ul>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	{% endfor %}
+</div>
+
+<script>
+$(".itemlistimg").hover(function(){
+	$(this).css("height", "100%");
+}, function(){
+	$(this).css("height", "");
+});
+</script>
+{% endblock %}

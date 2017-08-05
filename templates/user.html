@@ -34,9 +34,9 @@
 						<a class="btn btn-default" href="{{ url_for('set_balance', name=user.name, newbalance=i.oldbalance) }}"><span class="fa fa-undo"></span> </a>
 						{{i.time}} 
 						{% if i.methode == "buy" %}
-						bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj).price|euro }}
+						bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj)|itemprice|euro }}
 						{% elif i.methode == "recharge" %}
-						recharged balance with {{ (i.parameter|itemidtoobj).price|abs|euro }}
+						recharged balance with {{ (i.parameter|itemidtoobj)|itemprice|abs|euro }}
 						{% elif i.methode == "set_balance" %}
 						set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
 						{% else %}
@@ -66,7 +66,7 @@
 
 							<div class="boxspan">
 								<span>{{ i.name }}</span>
-								<span>{{ i.price|euro }}</span>
+								<span>{{ i|itemprice|euro }}</span>
 							</div>
 						</a>
 					{% endfor %}

@@ -96,3 +96,9 @@ a.box, h1 a {
 	color: white;
 	border-color: #222;
 }
+
+.itemlistimg {
+	height: 1em;
+	width: auto;
+	background-color: #0b1b40;
+}

@@ -18,6 +18,8 @@ config = app.config
 config.from_pyfile('config.py.example', silent=True)
 if not config.get('SECRET_KEY', None):
         config['SECRET_KEY'] = os.urandom(32)
+if config['DEBUG']:
+        app.jinja_env.auto_reload = True
 
 db = sqlite3.connect(config['SQLITE_DB'])
 cur = db.cursor()
@@ -80,6 +82,26 @@ def itemidtoobj(val):
 def euro(val):
 	return '{:.2f}€'.format(val/100)
 
+@app.template_filter()
+def itemprice(item):
+	if item['price']:
+		return item['price']
+	else:
+		step = 20
+		margin = 0.2
+		base = item['purchasingprice']*(1+margin)
+		if base % step != 0:
+			if base > 0:
+				return int(base/step)*step + step
+			else:
+				return int(base/step)*step - step
+		else:
+			return base
+
+@app.template_filter()
+def itemstock(item):
+	return 0
+
 csrf_endpoints = []
 
 def csrf_protect(func):
@@ -128,10 +150,30 @@ def log_action(userid,old,new,methode,parameter):
 def index():
 	return render_template('index.html', allusers=query('SELECT * FROM user WHERE deleted=0'))
 
+@register_navbar('Items', icon='list', iconlib='fa')
+@app.route("/items")
+def itemlist():
+	return render_template('itemlist.html', groups=query('SELECT * FROM "group" ORDER BY sortorder '), items=query('SELECT * FROM "item" WHERE deleted=0 or deleted=? ORDER BY name', request.values.get('showdeleted', 0)))
+
+@app.route("/items/add")
+@csrf_protect
+def additem():
+	return 'OK'
+
+@app.route("/items/<int:itemid>")
+@csrf_protect
+def edititem(itemid):
+	return 'OK'
+
+@app.route("/items/<int:itemid>/del")
+@csrf_protect
+def delitem(itemid):
+	return 'OK'
+
 @app.route("/u/<name>")
 def userpage(name):
 	user=query('SELECT * FROM user WHERE name = ?', name)[0]
-	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE user.name = ? order by log.time DESC limit 5', name)
+	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE user.name = ? ORDER BY log.time DESC LIMIT 5', name)
 	groups=query('SELECT * FROM "group" ORDER BY sortorder ')
 	items=query('SELECT * FROM "item" WHERE deleted=0 ')
 	return render_template('user.html', user=user, log=log, groups=groups, items=items )
@@ -149,10 +191,11 @@ def get_img(imgid):
 @csrf_protect
 def buy(name, itemid):
 	user = query('SELECT * FROM user WHERE name = ?', name)[0]
+	price = itemprice(itemidtoobj(itemid))
 	if user:
-		query('UPDATE user SET balance = balance - (SELECT price FROM item WHERE id = ?) WHERE name = ?', itemid, name)
+		query('UPDATE user SET balance = balance - ? WHERE name = ?', price, name)
 		usernew = query('SELECT * FROM user WHERE name = ?', name)[0]
-		if query('SELECT price FROM item WHERE id = ?', itemid)[0]['price'] > 0:
+		if price > 0:
 			log_action(user['id'], user['balance'], usernew['balance'], 'buy', itemid)
 		else:
 			log_action(user['id'], user['balance'], usernew['balance'], 'recharge', itemid)
