@@ -62,7 +62,7 @@
 				<div class="panel-body row">
 					{% for i in items if i.group_id == g.id %}
 					<a href="{{ url_for('buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" style="height: 180px;">
-							<div class="boximage" style="background-image: url('{{ url_for('get_img', itemid=i.picture_id) }}');"></div>
+							<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}');"></div>
 
 							<div class="boxspan">
 								<span>{{ i.name }}</span>

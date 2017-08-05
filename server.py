@@ -123,7 +123,7 @@ def log_action(userid,old,new,methode,parameter):
 	print([userid, methode, old, new, parameter])
 	query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
 
-@register_navbar('Home', icon='home')
+@register_navbar('User', icon='user', iconlib='fa')
 @app.route("/")
 def index():
 	return render_template('index.html', allusers=query('SELECT * FROM user WHERE deleted=0'))
@@ -137,9 +137,13 @@ def userpage(name):
 	return render_template('user.html', user=user, log=log, groups=groups, items=items )
 
 
-@app.route("/api/get_img/<int:itemid>")
-def get_img(name, itemid):
-	return 'OK'
+@app.route("/api/get_img/<imgid>")
+def get_img(imgid):
+	data = query('SELECT data FROM pictures WHERE id = ?', imgid)
+	if len(data) == 1:
+		return Response(data[0]['data'], mimetype='image/png')
+	else:
+		return 'Not found', 404
 
 @app.route("/api/buy/<name>/<int:itemid>")
 @csrf_protect
