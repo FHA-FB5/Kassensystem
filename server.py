@@ -207,7 +207,9 @@ def edititem(itemid):
 @app.route("/items/<int:itemid>/del")
 @csrf_protect
 def delitem(itemid):
-	return 'OK'
+	query("UPDATE item SET deleted = ? WHERE id = ?", {0:1,1:0}[itemidtoobj(itemid).get('deleted', 0)], itemid)
+	return redirect(request.values.get('ref', url_for('itemlist')))
+
 
 @app.route("/u/<name>")
 def userpage(name):
