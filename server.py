@@ -6,6 +6,8 @@ import locale
 import random
 import string
 import os
+from PIL import Image
+import io
 
 locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
 
@@ -66,6 +68,11 @@ def query(operation, *params, delim="sep"):
 			ptr[name] = col
 	return res
 
+def modify(operation, *params):
+	cur = get_dbcursor()
+	cur.execute(operation, params)
+	return cur.lastrowid
+
 @app.template_global()
 def isadmin(*args):
         return False
@@ -79,11 +86,16 @@ def itemidtoobj(val):
 	return query("SELECT * FROM item where id = ?", val)[0]
 
 @app.template_filter()
-def euro(val):
-	return '{:.2f}€'.format(val/100)
+def euro(val, symbol=True):
+	if symbol:
+		return '{:.2f}€'.format(val/100)
+	else:
+		return '{:.2f}'.format(val/100)
 
 @app.template_filter()
 def itemprice(item):
+	if not item:
+		return -1
 	if item['price']:
 		return item['price']
 	else:
@@ -155,15 +167,42 @@ def index():
 def itemlist():
 	return render_template('itemlist.html', groups=query('SELECT * FROM "group" ORDER BY sortorder '), items=query('SELECT * FROM "item" WHERE deleted=0 or deleted=? ORDER BY name', request.values.get('showdeleted', 0)))
 
-@app.route("/items/add")
-@csrf_protect
-def additem():
-	return 'OK'
-
-@app.route("/items/<int:itemid>")
+@app.route("/items/<itemid>", methods=['GET', 'POST'])
 @csrf_protect
 def edititem(itemid):
-	return 'OK'
+	itemid = int(itemid)
+	newid = int(itemid)
+
+	if ('name' in request.values):
+		args = []
+		args.append(request.values.get('name', 'FIXME'))
+		args.append(request.values.get('group_id', -1))
+		args.append(int(float(request.values.get('purchasingprice', 0))*100))
+		if not request.values.get('usecalculated', False):
+			args.append(int(float(request.values.get('price', 0))*100))
+		else:
+			args.append(None)
+		args.append(request.values.get('info_public', ''))
+		args.append(request.values.get('picture_id', -1))
+
+		if len(query("SELECT * from item WHERE id = ?", itemid)) > 0:
+			query("UPDATE item SET name = ?, group_id = ?, purchasingprice = ?, price = ?, info_public = ?, picture_id = ? WHERE id = ?", *args, itemid)
+		else:
+			newid = modify("INSERT INTO item (name, group_id, purchasingprice, price, info_public, picture_id) VALUES (?, ?, ?, ?, ?, ?)", *args)
+	
+	if 'action' in request.values:
+		if (request.values.get('action', 'save') == 'save'):
+			if itemid != newid :
+				return redirect(url_for("edititem", itemid=newid))
+		else:
+			return redirect(url_for("itemlist"))
+
+	if itemid != -1:
+		item = query("SELECT * from item WHERE id = ?", itemid)[0]
+	else:
+		item = None
+	pictures = query("SELECT id from pictures")
+	return render_template('item.html', item=item, pictures=pictures, groups=query('SELECT * FROM "group" ORDER BY sortorder'))
 
 @app.route("/items/<int:itemid>/del")
 @csrf_protect
@@ -179,13 +218,31 @@ def userpage(name):
 	return render_template('user.html', user=user, log=log, groups=groups, items=items )
 
 
-@app.route("/api/get_img/<imgid>")
-def get_img(imgid):
+@app.route("/api/img/<imgid>")
+@app.route("/api/img/")
+def get_img(imgid=None):
 	data = query('SELECT data FROM pictures WHERE id = ?', imgid)
 	if len(data) == 1:
 		return Response(data[0]['data'], mimetype='image/png')
 	else:
 		return 'Not found', 404
+
+@app.route("/api/img/add", methods=['GET', 'POST'])
+@app.route("/api/img/add/<imgid>", methods=['GET', 'POST'])
+def add_img(imgid=None):
+	if imgid:
+		imgid = int(imgid)
+	if (request.method == 'POST') and ('img' in request.files):
+		img = Image.open(request.files['img'])
+		tmp = io.BytesIO()
+		with img:
+			img.load()
+			img.thumbnail((200,200) , Image.ANTIALIAS)
+			img.save(tmp,format="PNG")
+		query("INSERT INTO pictures (data) values (?)",sqlite3.Binary(tmp.getvalue()))
+		return redirect(url_for("add_img",imgid=1))
+	else:
+		return render_template('imgupload.html', pictures=query("SELECT id from pictures"), selected=imgid)
 
 @app.route("/api/buy/<name>/<int:itemid>")
 @csrf_protect

@@ -18,7 +18,6 @@ CREATE TABLE IF NOT EXISTS 'item' (
 	picture_id	integer default -1,
 	price		integer default 0,
 	purchasingprice	integer default 0,
-	price		integer default 0,
 	info_public	text default '',
 	deleted		BOOLEAN NOT NULL default 0 CHECK (deleted IN (0,1))
 );

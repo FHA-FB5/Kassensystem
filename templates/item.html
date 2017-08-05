@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+	<div class="col-xs-12 col-md-6 col-md-offset-3">
+		<form method="POST">
+			<div class="form-group">
+				<label for="itemname">Name</label>
+				<input name="name" id="itemname" class="form-control" value="{{ item.name|d('') }}">
+			</div>
+			<div class="form-group">
+				<label for="group">Group</label>
+				<select name="group_id" id="group" class="form-control">
+					{% for g in groups %}
+					<option {% if g.id == item.group_id|d(0)%}selected {% endif %}value="{{g.id}}">{{ g.name }} ({{ g.id }})</option>
+					{% endfor %}
+				</select>
+			</div>
+			<div class="form-group">
+				<label for="itempurchasingprice">Purchasing price (€)</label>
+				<input type="number" name="purchasingprice" id="itempurchasingprice" step="0.01" class="form-control" value="{{ item.purchasingprice|d(0)|euro(symbol=false) }}">
+			</div>
+			<div class="form-group">
+				<label for="itemprice">Price (€)</label>
+				<input type="number" name="price" id="itemprice" step="0.01" class="form-control" value="{{ item|itemprice|euro(symbol=false) }}" {% if not item.price %}disabled{% endif %}>
+				<label class="form-check-label">
+					<input name="usecalculated" id="itemusecalculated" type="checkbox" class="form-check-input" {% if not item.price %}checked{% endif %} onChange="$('#itemprice').prop('disabled',$('#itemusecalculated')[0].checked);">
+					Calculate with purchasing price
+				</label>
+			</div>
+			<div class="form-group">
+				<label for="iteminfo">Info</label>
+				<textarea class="form-control" name="info_public" id="iteminfo">{{ item.info_public|d('') }}</textarea>
+			</div>
+			<div class="form-group" style="padding: 20px;">
+				<input type="hidden" name="picture_id" id="itempicture_id" value="{{ item.picture_id|d(-1) }}">
+				<a style="cursor: pointer;" data-toggle="modal" data-target="#pictureselect">
+				<div class="box" style="float: left; margin-right: 20px">
+					<div id="itemimg" class="boximage" style="20px; background-color: #0b1b40; background-image: url('{{ url_for('get_img', imgid=item.picture_id|d(-1)) }}');"></div>
+				</div>
+				</a>
+				<div>
+					<span>Click on the image to change it</span>
+				</div>
+			</div>
+			<ul class="list-inline pull-right">
+				<li><a class="btn btn-default" href="{{ url_for('itemlist') }}">abort</a></li>
+				<li><input type="submit" class="btn btn-default" name="action" value="save"></li>
+				<li><input type="submit" class="btn btn-default" name="action" value="save and back"></li>
+			</ul>
+		</form>
+	</div>
+</div>
+<div class="modal fade" id="pictureselect" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content" style="background-color: #222">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Select image</h4>
+			</div>
+			<div class="modal-body" style="padding: 0px;">
+				<iframe onload="resizeIframe(this)" src="{{ url_for('add_img', imgid=item.picture_id|d(-1)) }}" style="border: none; width: 100%; height: 100%"></iframe>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+function resizeIframe(obj){
+	obj.style.height = 0;
+	obj.style.height = Math.min(obj.contentWindow.document.body.scrollHeight, screen.height*0.8) + 'px';
+}
+window.onmessage = function(e){
+	$("#itemimg").css("background-image", "url('{{ url_for('get_img' ) }}" + e.data + "')");
+	$("#itempicture_id").val(e.data);
+	$('#pictureselect').modal('toggle');
+};
+</script>
+{% endblock %}
