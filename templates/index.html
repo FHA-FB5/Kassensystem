@@ -1,8 +1,14 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
+	<div class="col-xs-12">
+		<button class="btn btn-default" data-toggle="modal" data-target="#addusermodal">
+			Add user
+		</button>
+	</div>
+
 	{% for u in allusers|sort(attribute='name') %}
-		<a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', name=u.name) }}">
+		<a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
 			<div class="boximage" style="background-image: url('https://www.gravatar.com/avatar/{{ u.mail|lower|md5 }}?s=200&d=blank&r=x');">
 			</div>
 			<div class="boxspan">
@@ -10,5 +16,45 @@
 			</div>
 		</a>
 	{% endfor %}
+</div>
+
+<div class="modal fade" id="addusermodal" tabindex="-1" role="dialog">
+	<form method="POST" action="{{ url_for('adduser') }}">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content" style="background-color: #222">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Add user</h4>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="username">Name</label>
+						<input name="name" id="username" type="text" class="form-control">
+					</div>
+					<div class="form-group">
+						<label for="usermail">Mail</label>
+						<input name="mail" id="usermail" type="mail" class="form-control">
+						<small class="form-text text-muted">Used for gravatar and notifications if you enable them. Feel free to leave it blank.</small>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" name="transaction_mail" class="form-check-input">
+							Notify me per mail for every item i buy
+						</label>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" name="allow_logging" class="form-check-input" checked>
+							Display a history of transactions so i can undo them
+						</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Add user</button>
+				</div>
+			</div>
+		</div>
+	</form>
 </div>
 {% endblock %}

@@ -8,8 +8,7 @@ CREATE TABLE IF NOT EXISTS 'user' (
 	balance		integer default 0,
 	deleted		boolean not null default 0 check (deleted IN (0,1)),
 	transaction_mail BOOLEAN not NULL default 0 CHECK (transaction_mail IN (0,1)),
-	allow_logging	BOOLEAN not NULL default 0 CHECK (allow_logging IN (0,1)),
-	enable_stats	BOOLEAN not NULL default 1 CHECK (enable_stats IN (0,1))
+	allow_logging	BOOLEAN not NULL default 0 CHECK (allow_logging IN (0,1))
 );
 CREATE TABLE IF NOT EXISTS 'item' (
 	id		integer primary key autoincrement,

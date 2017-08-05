@@ -162,6 +162,26 @@ def log_action(userid,old,new,methode,parameter):
 def index():
 	return render_template('index.html', allusers=query('SELECT * FROM user WHERE deleted=0'))
 
+@app.route("/api/user/add", methods=['POST'])
+@csrf_protect
+def adduser():
+	if request.values.get('name', '') == '':
+		return redirect(url_for('index'))
+	args = []
+	args.append(request.values.get('name', ''))
+	args.append(request.values.get('mail', ''))
+	if request.values.get('transaction_mail', False):
+		args.append(True)
+	else:
+		args.append(False)
+	if request.values.get('allow_logging', False):
+		args.append(True)
+	else:
+		args.append(False)
+
+	query("INSERT INTO user (name, mail, transaction_mail, allow_logging) VALUES (?, ?, ?, ?)", *args)
+	return redirect(url_for('index'))
+
 @register_navbar('Items', icon='list', iconlib='fa')
 @app.route("/items")
 def itemlist():
@@ -212,8 +232,9 @@ def delitem(itemid):
 
 
 @app.route("/u/<name>")
-def userpage(name):
-	user=query('SELECT * FROM user WHERE name = ?', name)[0]
+@app.route("/u/<int:id>")
+def userpage(name=None, id=None):
+	user=query('SELECT * FROM user WHERE (name = ?) or (id = ?)', name, id)[0]
 	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE user.name = ? ORDER BY log.time DESC LIMIT 5', name)
 	groups=query('SELECT * FROM "group" ORDER BY sortorder ')
 	items=query('SELECT * FROM "item" WHERE deleted=0 ')
