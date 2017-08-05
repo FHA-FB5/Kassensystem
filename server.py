@@ -154,7 +154,6 @@ def register_navbar(name, iconlib='bootstrap', icon=None):
 
 def log_action(userid,old,new,methode,parameter):
 	user = query('SELECT * FROM user WHERE id = ?', userid)[0]
-	print([userid, methode, old, new, parameter])
 	query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
 
 @register_navbar('User', icon='user', iconlib='fa')
