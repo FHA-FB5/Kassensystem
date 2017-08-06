@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g, session, Response, redirect, request, url_for
+from flask import Flask, render_template, g, session, Response, redirect, request, url_for, flash
 from functools import wraps
 import sqlite3
 import hashlib
@@ -86,6 +86,10 @@ def itemidtoobj(val):
 	return query("SELECT * FROM item where id = ?", val)[0]
 
 @app.template_filter()
+def useridtoobj(val):
+	return query("SELECT * FROM user where id = ?", val)[0]
+
+@app.template_filter()
 def euro(val, symbol=True):
 	if symbol:
 		return '{:.2f}€'.format(val/100)
@@ -153,7 +157,7 @@ def register_navbar(name, iconlib='bootstrap', icon=None):
 	return wrapper
 
 def log_action(userid,old,new,methode,parameter):
-	user = query('SELECT * FROM user WHERE id = ?', userid)[0]
+	print(userid,old,new,methode,parameter)
 	query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
 
 @register_navbar('User', icon='user', iconlib='fa')
@@ -180,6 +184,41 @@ def adduser():
 
 	query("INSERT INTO user (name, mail, transaction_mail, allow_logging) VALUES (?, ?, ?, ?)", *args)
 	return redirect(url_for('index'))
+
+@app.route("/api/user/transfere", methods=['POST'])
+@csrf_protect
+def transferemoney():
+	args = []
+	sender = int(request.values.get('sender', -1))
+	sender = query('SELECT * FROM user WHERE id = ?', sender)
+	if not len(sender) == 1:
+		flash('Sender not found')
+		print(sender)
+		return redirect(request.values.get('ref', url_for('userpage', id=request.values.get('sender', -1))))
+	sender = sender[0]
+
+	recipient = request.values.get('recipient', None)
+	recipient = query('SELECT * FROM user WHERE name = ?', recipient)
+	if not len(recipient) == 1:
+		print(recipient)
+		flash('Recipient not found')
+		return redirect(request.values.get('ref', url_for('userpage', id=request.values.get('sender', -1))))
+	recipient = recipient[0]
+
+
+	amount = int(float(request.values.get('amount', 0))*100)
+	args.append(request.values.get('reason', ''))
+		
+	query('UPDATE user SET balance = balance - ? WHERE id = ?', amount , sender['id'])
+	log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transfereTo', recipient['id'])
+
+	query('UPDATE user SET balance = balance + ? WHERE id = ?', amount , recipient['id'])
+	log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transfereFrom', sender['id'])
+	
+	if request.values.get('noref', False):
+		return 'OK', 200
+	else:
+		return redirect(request.values.get('ref', url_for('userpage', id=sender['id'])))
 
 @register_navbar('Items', icon='list', iconlib='fa')
 @app.route("/items")
@@ -234,10 +273,11 @@ def delitem(itemid):
 @app.route("/u/<int:id>")
 def userpage(name=None, id=None):
 	user=query('SELECT * FROM user WHERE (name = ?) or (id = ?)', name, id)[0]
-	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE user.name = ? ORDER BY log.time DESC LIMIT 5', name)
+	users=query('SELECT * FROM user')
+	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 5', user['name'])
 	groups=query('SELECT * FROM "group" ORDER BY sortorder ')
 	items=query('SELECT * FROM "item" WHERE deleted=0 ')
-	return render_template('user.html', user=user, log=log, groups=groups, items=items )
+	return render_template('user.html', user=user, log=log, groups=groups, items=items, users=users )
 
 
 @app.route("/api/img/<imgid>")
@@ -283,7 +323,7 @@ def buy(name, itemid):
 	else:
 		return redirect(request.values.get('ref', url_for('userpage', name=name)))
 
-@app.route("/api/setbalance/<name>/<int:newbalance>", methods=['GET', 'POST'])
+@app.route("/api/setbalance/<name>/<newbalance>", methods=['GET', 'POST'])
 @app.route("/api/setbalance/<name>", methods=['GET', 'POST'])
 @csrf_protect
 def set_balance(name, newbalance=None):

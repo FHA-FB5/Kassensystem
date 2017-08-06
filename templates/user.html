@@ -4,10 +4,11 @@
 	<div style="display: flex;">
 		<div id="userimg"><div class="boximage" style="background-image: url('https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200');" ></div></div>
 		<div>
-			<div><h3 id="username">{{ user.name }}</h3></div>
+			<div><h3>{{ user.name }}</h3></div>
 			<div>
 				<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
-				<span id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</span>
+				<button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
+				<button id="usertransfere" class="btn btn-default" data-toggle="modal" data-target="#transferemodal">Transfere to user</button>
 			</div>
 			<script>
 				$("#userbalanceedit").click(
@@ -39,6 +40,10 @@
 						recharged balance with {{ (i.parameter|itemidtoobj)|itemprice|abs|euro }}
 						{% elif i.methode == "set_balance" %}
 						set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
+						{% elif i.methode == "transfereTo" %}
+						transfered {{ (i.oldbalance - i.newbalance)|euro }} to {{ (i.parameter|useridtoobj).name }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
+						{% elif i.methode == "transfereFrom" %}
+						{{ (i.parameter|useridtoobj).name }} transfered {{ (i.newbalance - i.oldbalance)|euro }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
 						{% else %}
 						something is broken
 						{% endif %}
@@ -76,6 +81,45 @@
 	</div>
 	{% endfor %}
 </div>
+<div class="modal fade" id="transferemodal" tabindex="-1" role="dialog">
+	<form method="POST" action="{{ url_for('transferemoney') }}">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content" style="background-color: #222">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Transfere money to user</h4>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" name="sender" value="{{ user.id }}">
+					<div class="form-group">
+						<label for="username">Recipient</label>
+						<input name="recipient" list="users" id="username" type="text" class="form-control">
+						<datalist id="users">
+							{% for u in users if u.deleted==0 %}
+							<option>{{ u.name }}</option>
+							{% endfor %}
+						</datalist>
+					</div>
+					<div class="form-group">
+						<label for="transfereamount">Amount (€)</label>
+						<input name="amount" id="transfereamount" type="number" step="0.01" class="form-control" value="0.00">
+					</div>
+					<div class="form-group">
+						<label for="transferereason">Reason</label>
+						<input name="reason" id="transferereason" type="text" class="form-control">
+						<small class="form-text text-muted">A reason for the transfere, optional.</small>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Transfere</button>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+
+
 <script>
 	var xhr;
 	$(".buylink").click(
