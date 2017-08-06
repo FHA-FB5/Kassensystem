@@ -18,6 +18,7 @@ app.jinja_env.lstrip_blocks = True
 
 config = app.config
 config.from_pyfile('config.py.example', silent=True)
+config.from_pyfile('config.py', silent=True)
 if not config.get('SECRET_KEY', None):
         config['SECRET_KEY'] = os.urandom(32)
 if config['DEBUG']:
