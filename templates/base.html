@@ -5,7 +5,8 @@
 	<head>
 		{% block header %}
 		<meta charset="UTF-8">
-		<title>CCCAC-M.U.K.A.S</title>
+		<title>CCCAC - M.U.K.A.S{% block title %}{% for endpoint, caption, iconlib, gly, visible in navbar if ((visible or isadmin()) and (endpoint == request.endpoint)) %}- {{ caption }}{% else%}{% endfor %}{% endblock %}
+		</title>
 		
 		<script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename='spin.js') }}"></script>
@@ -37,7 +38,7 @@
 					<a class="navbar-brand" href="/" style="padding: 2px;">
 						<ul class="list-inline">
 							<li><img alt="" src="{{url_for('static', filename='logo.png')}}" style="height: 40px; margin: 4px;" ></li>
-							<li>CCCAC-M.U.K.A.S</li>
+							<li>CCCAC - M.U.K.A.S</li>
 						</ul>
 					</a>
 				</div>
