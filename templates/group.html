@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+	<div class="col-xs-12 col-md-6 col-md-offset-3">
+		<form method="POST">
+			<div class="form-group">
+				<label for="groupname">Name</label>
+				<input name="name" id="groupname" class="form-control" value="{{ group.name|d('') }}">
+			</div>
+			<div class="form-group">
+				<label for="sortorder">Sort order</label>
+				<input type="number" name="sortorder" id="sortorder" class="form-control" value="{{ group.sortorder|d(0) }}">
+			</div>
+			<ul class="list-inline pull-right">
+				<li><a class="btn btn-default" href="{{ url_for('grouplist') }}">abort</a></li>
+				<li><input type="submit" class="btn btn-default" name="action" value="save"></li>
+				<li><input type="submit" class="btn btn-default" name="action" value="save and back"></li>
+			</ul>
+		</form>
+	</div>
+</div>
+
+{% endblock %}

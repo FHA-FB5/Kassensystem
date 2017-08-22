@@ -31,12 +31,12 @@ a.box, h1 a {
 	height: 100px;
 }
 
-#userimg .boximage {
+.userimg .boximage {
 	width: 200px;
 	height: 200px;
 }
 
-#userimg {
+.userimg {
 	margin: 20px;
 	min-width: 200px;
 	min-height: 200px;

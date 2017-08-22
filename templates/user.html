@@ -2,27 +2,30 @@
 {% block content %}
 <div class="row">
 	<div style="display: flex;">
-		<div id="userimg"><div class="boximage" style="background-image: url('https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200');" ></div></div>
+		<div class="userimg"><div class="boximage" style="background-image: url('{% if user.picture_id|d(-1) != -1 %}{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}{% else %}https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200{% endif %}');" ></div></div>
 		<div>
-			<div><h3>{{ user.name }}</h3></div>
+			<div><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3><button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button></div>
 			<div>
 				<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
 				<button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
-				<button id="usertransfere" class="btn btn-default" data-toggle="modal" data-target="#transferemodal">Transfere to user</button>
+				<button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
 			</div>
 			<script>
 				$("#userbalanceedit").click(
 					function () {
-						var newbalance = parseInt(parseFloat(prompt("New balance:",{{ user.balance }}/100.0))*100);
-						jQuery.ajax({
-							method: "POST",
-							dataType: "text",
-							data: { 'newbalance': newbalance },
-							url: "{{ url_for('set_balance', name=user.name) }}",
-							success: function (data) {
-								window.location = "{{ request.url }}"
-							}
-						});
+						var rawinput = prompt("New balance:",{{ user.balance }}/100.0);
+						if (rawinput != null) {
+							var newbalance = parseInt(parseFloat(rawinput)*100);
+							jQuery.ajax({
+								method: "POST",
+								dataType: "text",
+								data: { 'newbalance': newbalance },
+								url: "{{ url_for('set_balance', name=user.name) }}",
+								success: function (data) {
+									window.location = "{{ request.url }}"
+								}
+							});
+						}
 
 					}
 				);
@@ -40,12 +43,12 @@
 						recharged balance with {{ (i.parameter|itemidtoobj)|itemprice|abs|euro }}
 						{% elif i.methode == "set_balance" %}
 						set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
-						{% elif i.methode == "transfereTo" %}
-						transfered {{ (i.oldbalance - i.newbalance)|euro }} to <a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a>{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
-						{% elif i.methode == "transfereFrom" %}
-						<a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a> transfered {{ (i.newbalance - i.oldbalance)|euro }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
+						{% elif i.methode == "transferTo" %}
+						transferd {{ (i.oldbalance - i.newbalance)|euro }} to <a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a>{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
+						{% elif i.methode == "transferFrom" %}
+						<a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a> transferd {{ (i.newbalance - i.oldbalance)|euro }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
 						{% else %}
-						something is broken
+						something is broken ({{ i|pprint }})
 						{% endif %}
 					</li>
 				{% endfor %}
@@ -67,12 +70,11 @@
 				<div class="panel-body row">
 					{% for i in items if i.group_id == g.id %}
 					<a href="{{ url_for('buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" style="height: 180px;">
-							<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}');"></div>
-
-							<div class="boxspan">
-								<span>{{ i.name }}</span>
-								<span>{{ i|itemprice|euro }}</span>
-							</div>
+						<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}');"></div>
+						<div class="boxspan">
+							<span>{{ i.name }}</span>
+							<span>{{ i|itemprice|euro }}</span>
+						</div>
 						</a>
 					{% endfor %}
 				</div>
@@ -81,16 +83,21 @@
 	</div>
 	{% endfor %}
 </div>
-<div class="modal fade" id="transferemodal" tabindex="-1" role="dialog">
-	<form method="POST" action="{{ url_for('transferemoney') }}">
+
+<div class="modal fade" id="transfermodal" tabindex="-1" role="dialog">
+	<form method="POST" action="{{ url_for('transfermoney') }}">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content" style="background-color: #222">
 				<div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="myModalLabel">Transfere money to user</h4>
+					<h4 class="modal-title" id="myModalLabel">Transfer money to user</h4>
 				</div>
 				<div class="modal-body">
 					<input type="hidden" name="sender" value="{{ user.id }}">
+					<div class="form-group">
+
+					</div>
+
 					<div class="form-group">
 						<label for="username">Recipient</label>
 						<input name="recipient" list="users" id="username" type="text" class="form-control">
@@ -101,18 +108,18 @@
 						</datalist>
 					</div>
 					<div class="form-group">
-						<label for="transfereamount">Amount (€)</label>
-						<input name="amount" id="transfereamount" type="number" step="0.01" class="form-control" value="0.00">
+						<label for="transferamount">Amount (€)</label>
+						<input name="amount" id="transferamount" type="number" step="0.01" class="form-control" value="0.00">
 					</div>
 					<div class="form-group">
-						<label for="transferereason">Reason</label>
-						<input name="reason" id="transferereason" type="text" class="form-control">
-						<small class="form-text text-muted">A reason for the transfere, optional.</small>
+						<label for="transferreason">Reason</label>
+						<input name="reason" id="transferreason" type="text" class="form-control">
+						<small class="form-text text-muted">A reason for the transfer, optional.</small>
 					</div>
 				</div>
 				<div class="modal-footer">
 					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-					<button type="submit" class="btn btn-primary">Transfere</button>
+					<button type="submit" class="btn btn-primary">Transfer</button>
 				</div>
 			</div>
 		</div>
@@ -120,36 +127,109 @@
 </div>
 
 
+<div class="modal fade" id="usersettingsmodal" tabindex="-1" role="dialog">
+	<form method="POST" action="{{ url_for('edituser') }}">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content" style="background-color: #222">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+					<h4 class="modal-title" id="myModalLabel">Edit user</h4>
+				</div>
+				<div class="modal-body">
+					<input type="hidden" name="userid" value="{{ user.id }}">
+					<div class="form-group" style="padding: 20px;">
+						<input type="hidden" name="picture_id" id="userpicture_id" value="{{ user.picture_id|d(-1) }}">
+						<a style="cursor: pointer;" data-toggle="modal" data-target="#pictureselect">
+							<div class="userimg"><div class="boximage" style="background-color: #666; background-image: url('{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}');"></div></div>
+						</a>
+						<div>
+							<span>Click on the image to change it</span>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="username">Name</label>
+						<input name="name" id="username" type="text" class="form-control" value="{{user.name}}">
+					</div>
+					<div class="form-group">
+						<label for="usermail">Mail</label>
+						<input name="mail" id="usermail" type="mail" class="form-control" value="{{user.mail}}">
+						<small class="form-text text-muted">Used for gravatar and notifications if you enable them. Feel free to leave it blank.</small>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" name="transaction_mail" class="form-check-input" {% if user.transaction_mail != 0 %}checked{% endif %}>
+							Notify me by mail for every item I buy
+						</label>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" name="allow_logging" class="form-check-input" {% if user.allow_logging != 0 %}checked{% endif %}>
+							Display a history of transactions so I can undo them
+						</label>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="submit" class="btn btn-primary">Save</button>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+<div class="modal fade" id="pictureselect" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content" style="background-color: #222">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Select image</h4>
+			</div>
+			<div class="modal-body" style="padding: 0px;">
+				<iframe onload="resizeIframe(this)" src="{{ url_for('add_img', imgid=user.picture_id|d(-1)) }}" style="border: none; width: 100%; height: 100%"></iframe>
+			</div>
+		</div>
+	</div>
+</div>
+
 <script>
-	var xhr;
-	$(".buylink").click(
-		function(e) {
-			return ; //fix me, need to reload log...
-			e.preventDefault();
-			jQuery.ajax({
-				method: "GET",
-				dataType: "text",
-				url: this.href,
-				data: {'noref': 1},
-				success: function (data) {
-					//reload balance
-					if(xhr && xhr.readyState != 4){
-						xhr.abort();
-					}
-					xhr = jQuery.ajax({
-						method: "GET",
-						dataType: "text",
-						url: "{{ url_for('get_balance', name=user.name)  }}",
-						success: function (data) {
-							$("#userbalance").text(data/100+"€");
-						}
-					});
-
-
+var xhr;
+$(".buylink").click(
+	function(e) {
+		return ; //fix me, need to reload log...
+		e.preventDefault();
+		jQuery.ajax({
+			method: "GET",
+			dataType: "text",
+			url: this.href,
+			data: {'noref': 1},
+			success: function (data) {
+				//reload balance
+				if(xhr && xhr.readyState != 4){
+					xhr.abort();
 				}
-			});
-		}
-	);
+				xhr = jQuery.ajax({
+					method: "GET",
+					dataType: "text",
+					url: "{{ url_for('get_balance', name=user.name)  }}",
+					success: function (data) {
+						$("#userbalance").text(data/100+"€");
+					}
+				});
+
+
+			}
+		});
+	}
+);
+function resizeIframe(obj){
+	obj.style.height = 0;
+	obj.style.height = Math.min(obj.contentWindow.document.body.scrollHeight, screen.height*0.8) + 'px';
+}
+window.onmessage = function(e){
+	$(".userimg > div").css("background-image", "url('{{ url_for('get_img' ) }}" + e.data + "')");
+	$("#userpicture_id").val(e.data);
+	$('#pictureselect').modal('hide');
+	$('#usersettingsmodal').modal('show');
+};
 </script>
 
 {% endblock %}

@@ -9,8 +9,7 @@
 
 	{% for u in allusers|sort(attribute='name') %}
 		<a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
-			<div class="boximage" style="background-image: url('https://www.gravatar.com/avatar/{{ u.mail|lower|md5 }}?s=200&d=blank&r=x');">
-			</div>
+			<div class="boximage" style="background-image: url('{% if u.picture_id|d(-1) != -1 %}{{ url_for('get_img', imgid=u.picture_id|d(-1)) }}{% else %}https://www.gravatar.com/avatar/{{ u.mail|lower|md5}}?s=200{% endif %}');" ></div>
 			<div class="boxspan">
 				<span>{{ u.name }}</span>
 			</div>
@@ -39,13 +38,13 @@
 					<div class="form-check">
 						<label class="form-check-label">
 							<input type="checkbox" name="transaction_mail" class="form-check-input">
-							Notify me by mail for every item i buy
+							Notify me by mail for every item I buy
 						</label>
 					</div>
 					<div class="form-check">
 						<label class="form-check-label">
 							<input type="checkbox" name="allow_logging" class="form-check-input" checked>
-							Display a history of transactions so i can undo them
+							Display a history of transactions so I can undo them
 						</label>
 					</div>
 				</div>

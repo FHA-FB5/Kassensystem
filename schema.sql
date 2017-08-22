@@ -4,6 +4,7 @@ BEGIN TRANSACTION;
 CREATE TABLE IF NOT EXISTS 'user' (
 	id		integer primary key autoincrement,
 	name		varchar(255) default 'user',
+	picture_id	integer default NULL,
 	mail		varchar(255) default '',
 	balance		integer default 0,
 	deleted		boolean not null default 0 check (deleted IN (0,1)),

@@ -158,8 +158,8 @@ def register_navbar(name, iconlib='bootstrap', icon=None):
 	return wrapper
 
 def log_action(userid,old,new,methode,parameter):
-	print(userid,old,new,methode,parameter)
-	query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
+	if useridtoobj(userid)['allow_logging']:
+		query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
 
 @register_navbar('User', icon='user', iconlib='fa')
 @app.route("/")
@@ -186,9 +186,31 @@ def adduser():
 	query("INSERT INTO user (name, mail, transaction_mail, allow_logging) VALUES (?, ?, ?, ?)", *args)
 	return redirect(url_for('index'))
 
-@app.route("/api/user/transfere", methods=['POST'])
+@app.route("/api/user/edit", methods=['POST'])
 @csrf_protect
-def transferemoney():
+def edituser():
+	if request.values.get('name', '') == '':
+		return redirect(url_for('index'))
+	args = []
+	args.append(request.values.get('name', ''))
+	args.append(request.values.get('mail', ''))
+	if request.values.get('transaction_mail', False):
+		args.append(True)
+	else:
+		args.append(False)
+	if request.values.get('allow_logging', False):
+		args.append(True)
+	else:
+		args.append(False)
+	args.append(int(request.values.get('picture_id', -1)))
+	args.append(int(request.values.get('userid', -1)))
+
+	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ? WHERE id = ?", *args)
+	return redirect(url_for('userpage',id=request.values.get('userid', -1)))
+
+@app.route("/api/user/transfer", methods=['POST'])
+@csrf_protect
+def transfermoney():
 	args = []
 	sender = int(request.values.get('sender', -1))
 	sender = query('SELECT * FROM user WHERE id = ?', sender)
@@ -211,10 +233,10 @@ def transferemoney():
 	args.append(request.values.get('reason', ''))
 		
 	query('UPDATE user SET balance = balance - ? WHERE id = ?', amount , sender['id'])
-	log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transfereTo', recipient['id'])
+	log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transferTo', recipient['id'])
 
 	query('UPDATE user SET balance = balance + ? WHERE id = ?', amount , recipient['id'])
-	log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transfereFrom', sender['id'])
+	log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transferFrom', sender['id'])
 	
 	if request.values.get('noref', False):
 		return 'OK', 200
@@ -225,6 +247,11 @@ def transferemoney():
 @app.route("/items")
 def itemlist():
 	return render_template('itemlist.html', groups=query('SELECT * FROM "group" ORDER BY sortorder '), items=query('SELECT * FROM "item" WHERE deleted=0 or deleted=? ORDER BY name', request.values.get('showdeleted', 0)))
+
+@register_navbar('Groups', icon='object-group', iconlib='fa')
+@app.route("/groups")
+def grouplist():
+	return render_template('grouplist.html', groups=query('SELECT * FROM "group" ORDER BY sortorder '))
 
 @app.route("/items/<itemid>", methods=['GET', 'POST'])
 @csrf_protect
@@ -262,6 +289,34 @@ def edititem(itemid):
 		item = None
 	pictures = query("SELECT id from pictures")
 	return render_template('item.html', item=item, pictures=pictures, groups=query('SELECT * FROM "group" ORDER BY sortorder'))
+
+@app.route("/groups/<groupid>", methods=['GET', 'POST'])
+@csrf_protect
+def editgroup(groupid):
+	groupid = int(groupid)
+	newid = int(groupid)
+
+	if ('name' in request.values):
+		args = []
+		args.append(request.values.get('name', 'FIXME'))
+		args.append(request.values.get('sortorder', 0))
+
+		if len(query('SELECT * from "group" WHERE id = ?', groupid)) > 0:
+			query('UPDATE "group" SET name = ?, sortorder = ? WHERE id = ?', *args, groupid)
+		else:
+			newid = modify('INSERT INTO "group" (name, sortorder) VALUES (?, ?)', *args)
+	
+	if 'action' in request.values:
+		if (request.values.get('action', 'save') == 'save'):
+			if itemid != newid :
+				return redirect(url_for("editgroup", groupid=groupid))
+		else:
+			return redirect(url_for("grouplist"))
+	if groupid != -1:
+		group = query('SELECT * from "group" WHERE id = ?', groupid)[0]
+	else:
+		group = None
+	return render_template('group.html', group=group)
 
 @app.route("/items/<int:itemid>/del")
 @csrf_protect
