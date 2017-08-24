@@ -6,6 +6,7 @@ import locale
 import random
 import string
 import os
+import datetime
 from PIL import Image
 import io
 
@@ -76,7 +77,20 @@ def modify(operation, *params):
 
 @app.template_global()
 def isadmin(*args):
-        return False
+        return session.get('loggedin', False)
+
+admin_endpoints = []
+def admin_required(func):
+	admin_endpoints.append(func.__name__)
+	@wraps(func)
+	def decorator(*args, **kwargs):
+		if not isadmin():
+			flash('You need to be logged in to do that!')
+			return redirect(url_for('login', ref=request.url))
+
+		else:
+			return func(*args, **kwargs)
+	return decorator
 
 @app.template_filter()
 def md5(val):
@@ -150,10 +164,10 @@ app.jinja_env.globals['navbar'] = []
 # ( see: http://getbootstrap.com/components/#glyphicons )
 # or 'fa'
 # ( see: http://fontawesome.io/icons/ )
-def register_navbar(name, iconlib='bootstrap', icon=None):
+def register_navbar(name, iconlib='bootstrap', icon=None, visible=False):
 	def wrapper(func):
 		endpoint = func.__name__
-		app.jinja_env.globals['navbar'].append((endpoint, name, iconlib, icon, True))
+		app.jinja_env.globals['navbar'].append((endpoint, name, iconlib, icon, visible))
 		return func
 	return wrapper
 
@@ -399,9 +413,21 @@ def get_balance(name):
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
-	return "Test"
+	if request.method == 'GET':
+		return render_template('login.html')
+	user, pw = request.form.get('user'), request.form.get('password')
+	if not True:
+		flash('Login failed!')
+		return render_template('login.html')
+	session['user'] = user
+	session['loggedin'] = True
+	session['logindate'] = datetime.datetime.now()
+	return redirect(request.values.get('ref', url_for('index')))
 
 @app.route("/logout")
 def logout():
-	return "Test"
+	session.pop('user', None)
+	session.pop('logindate', None)
+	session.pop('loggedin', None)
+	return redirect(request.values.get('ref', url_for('index')))
 
