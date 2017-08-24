@@ -120,9 +120,10 @@ def api_img_add(imgid=None):
 			img.load()
 			img.thumbnail((200,200) , Image.ANTIALIAS)
 			img.save(tmp,format="PNG")
-		query("INSERT INTO pictures (data) values (?)",sqlite3.Binary(tmp.getvalue()))
-		return redirect(url_for("add_img",imgid=1))
+		newid = modify("INSERT INTO pictures (data) values (?)",sqlite3.Binary(tmp.getvalue()))
+		return redirect(url_for("add_img",imgid=newid))
 	else:
+		# TODO why!?!
 		return render_template('imgupload.html', pictures=query("SELECT id from pictures"), selected=imgid)
 
 @app.route("/api/user/<name>/buy/<int:itemid>")
