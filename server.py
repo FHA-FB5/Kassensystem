@@ -249,7 +249,7 @@ def editgroup(groupid):
 	
 	if 'action' in request.values:
 		if (request.values.get('action', 'save') == 'save'):
-			if itemid != newid :
+			if groupid != newid :
 				return redirect(url_for("editgroup", groupid=groupid))
 		else:
 			return redirect(url_for("grouplist"))
