@@ -1,4 +1,5 @@
 from server import *
+import json
 
 @app.route("/api/user/add", methods=['POST'])
 @csrf_protect
@@ -141,7 +142,11 @@ def api_user_buy(name, itemid):
 	if request.values.get('noref', False):
 		return 'OK'
 	else:
-		return redirect(request.values.get('ref', url_for('userpage', name=name)))
+		ref= request.values.get('ref', None)
+		if ref:
+			return redirect(ref)
+		else:
+			return 'OK'
 
 @app.route("/api/user/<name>/balance", methods=['GET', 'POST'])
 @csrf_protect
@@ -154,14 +159,26 @@ def api_user_balance(name, newbalance=None):
 		query('UPDATE user SET balance = ? WHERE name = ?', newbalance, name)
 		log_action(user['id'], user['balance'], newbalance, 'set_balance', 0)
 	else:
-		return str(query('SELECT balance FROM user WHERE name = ?', name)[0]['balance']),200
+		data = query('SELECT balance FROM user WHERE name = ?', name)[0]['balance']
+		if request.values.get('formated', False):
+			return euro(data)
+		else:
+			return str(data)
 	ref = request.values.get('ref', None)
 	if ref:
 		return redirect(ref)
 	else:
 		return 'OK'
 
+def date_json_handler(obj):
+	return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+
 @app.route("/api/user/<name>/log")
-@csrf_protect
 def api_user_log(name):
-	return str(query('SELECT balance FROM user WHERE name = ?', name)[0]['balance']),200
+	resulttype = request.values.get('type', 'html')
+	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 5', name)
+	user=query('SELECT * from user WHERE name = ?', name)[0]
+	if resulttype == 'json':
+		return json.dumps(log, default=date_json_handler)
+	else:
+		return render_template_string("{% from 'macros.html' import loglist %}{{ loglist(log, user) }}", user=user, log=log)

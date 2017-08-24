@@ -1,62 +1,45 @@
 {% extends "base.html" %}
+{% from 'macros.html' import loglist %}
 {% block title %}: {{ user.name }}{% endblock %}
 {% block content %}
-<div class="row">
-	<div style="display: flex;">
-		<div class="userimg"><div class="boximage" style="background-image: url('{% if user.picture_id|d(-1) != -1 %}{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}{% else %}https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200{% endif %}');" ></div></div>
+	<div class="userimg col-xs-12 col-sm-3">
+		<div class="boximage" style="background-image: url('{% if user.picture_id|d(-1) != -1 %}{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}{% else %}https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200{% endif %}');" ></div>
+	</div>
+	<div class="col-xs-12 col-sm-7" style="margin-bottom: 20px">
+		<div><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3><button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button></div>
 		<div>
-			<div><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3><button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button></div>
-			<div>
-				<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
-				<button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
-				<button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
-			</div>
-			<script>
-				$("#userbalanceedit").click(
-					function () {
-						var rawinput = prompt("New balance:",{{ user.balance }}/100.0);
-						if (rawinput != null) {
-							var newbalance = parseInt(parseFloat(rawinput)*100);
-							jQuery.ajax({
-								method: "POST",
-								dataType: "text",
-								data: { 'newbalance': newbalance },
-								url: "{{ url_for('api_user_balance', name=user.name) }}",
-								success: function (data) {
-									window.location = "{{ request.url }}"
-								}
-							});
-						}
-
+			<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
+			<button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
+			<button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
+		</div>
+		<script>
+			$("#userbalanceedit").click(
+				function () {
+					var rawinput = prompt("New balance:",{{ user.balance }}/100.0);
+					if (rawinput != null) {
+						var newbalance = parseInt(parseFloat(rawinput)*100);
+						jQuery.ajax({
+							method: "POST",
+							dataType: "text",
+							data: { 'newbalance': newbalance },
+							url: "{{ url_for('api_user_balance', name=user.name) }}",
+							success: function (data) {
+								window.location = "{{ request.url }}"
+							}
+						});
 					}
-				);
-			</script>
-			<div><h4 id="userlog">log:</h4></div>
-			<div id="userlogdiv">
-				<ul class="list-unstyled">
-				{% for i in log %}
-					<li class="logentry">
-						<a class="btn btn-default" href="{{ url_for('api_user_balance', name=user.name, newbalance=i.oldbalance, ref=request.url) }}"><span class="fa fa-undo"></span> </a>
-						{{i.time}} 
-						{% if i.methode == "buy" %}
-						bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj)|itemprice|euro }}
-						{% elif i.methode == "recharge" %}
-						recharged balance with {{ (i.parameter|itemidtoobj)|itemprice|abs|euro }}
-						{% elif i.methode == "set_balance" %}
-						set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
-						{% elif i.methode == "transferTo" %}
-						transferd {{ (i.oldbalance - i.newbalance)|euro }} to <a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a>{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
-						{% elif i.methode == "transferFrom" %}
-						<a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a> transferd {{ (i.newbalance - i.oldbalance)|euro }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
-						{% else %}
-						something is broken ({{ i|pprint }})
-						{% endif %}
-					</li>
-				{% endfor %}
-				</ul>
-			</div>
+
+				}
+			);
+		</script>
+		<div><h4 id="userlog">log:</h4></div>
+		<div id="userlogdiv">
+			{{ loglist(log, user) }}
 		</div>
 	</div>
+
+
+
 	{% for g in groups %}
 	<div class="col-xs-12">
 		<div class="panel panel-default">
@@ -70,13 +53,15 @@
 			<div id="group_{{ g.id }}" class="panel-collapse collapse in">
 				<div class="panel-body row">
 					{% for i in items if i.group_id == g.id %}
-					<a href="{{ url_for('api_user_buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" data-count="0" style="height: 180px;">
-						<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}');"></div>
+					<a href="{{ url_for('api_user_buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" data-count="0" data-ajaxrunning="0" data-infotimeout="0" style="height: 180px;">
+						<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}'); text-align: center;">
+							<!-- status --!>
+						</div>
 						<div class="boxspan">
 							<span>{{ i.name }}</span>
 							<span>{{ i|itemprice|euro }}</span>
 						</div>
-						</a>
+					</a>
 					{% endfor %}
 				</div>
 			</div>
@@ -140,7 +125,10 @@
 					<div class="form-group" style="padding: 20px;">
 						<input type="hidden" name="picture_id" id="userpicture_id" value="{{ user.picture_id|d(-1) }}">
 						<a style="cursor: pointer;" data-toggle="modal" data-target="#pictureselect">
-							<div class="userimg"><div class="boximage" style="background-color: #666; background-image: url('{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}');"></div></div>
+							<div class="userimg">
+								<div class="boximage" style="background-color: #666; background-image: url('{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}');">
+								</div>
+							</div>
 						</a>
 						<div>
 							<span>Click on the image to change it</span>
@@ -191,14 +179,41 @@
 </div>
 
 <script>
-var xhr;
+var balance_xhr;
+var log_xhr;
 $(".buylink").click(
 	function(e) {
-		return ; //fix me, need to reload log...
 		e.preventDefault();
 		var aele = $(this);
-		var buycount = aele.data('count') + 1;
-		aele.data('count', buycount);
+		aele.data('count', aele.data('count') + 1);
+		aele.data('ajaxrunning', aele.data('ajaxrunning') + 1);
+
+		var updateitem = function (container, failed) {
+			var str = '<span style="line-height: 100px; font-size: 20px; text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;" class="'
+			if (failed) {
+				str += 'glyphicon glyphicon-alert '
+			} else {
+				if (aele.data('ajaxrunning') == 0) {
+					str += 'glyphicon glyphicon-ok '
+				} else {
+					str += 'glyphicon glyphicon-cog '
+				}
+
+			}
+			if (aele.data('ajaxrunning') == 0) {
+				clearTimeout(aele.data("infotimeout"));
+				aele.data("infotimeout", setTimeout(function() {
+					aele.data('count',0);
+					$("span",container).fadeOut("slow");
+				}, 4000));
+			}
+			str += '"> '
+			str += "" + aele.data('count') - aele.data('ajaxrunning') +'/' + aele.data('count');
+			str += '</span>'
+
+			$(container).html(str);
+		}
+		clearTimeout(aele.data("infotimeout"));
 
 		jQuery.ajax({
 			method: "GET",
@@ -206,16 +221,33 @@ $(".buylink").click(
 			url: this.href,
 			data: {'noref': 1},
 			success: function (data) {
+				var ajaxrunning = aele.data('ajaxrunning') - 1;
+				aele.data('ajaxrunning', ajaxrunning);
+				updateitem($('.boximage', aele),false);
+
 				//reload balance
-				if(xhr && xhr.readyState != 4){
-					xhr.abort();
+				if(balance_xhr && balance_xhr.readyState != 4){
+					balance_xhr.abort();
 				}
-				xhr = jQuery.ajax({
+				balance_xhr = jQuery.ajax({
 					method: "GET",
 					dataType: "text",
-					url: "{{ url_for('api_user_balance', name=user.name)  }}",
+					url: "{{ url_for('api_user_balance', name=user.name) }}",
+					data: {"formated": 1},
 					success: function (data) {
-						$("#userbalance").text(data/100+"€");
+						$("#userbalance").text(data);
+					}
+				});
+				// reload log
+				if(log_xhr && log_xhr.readyState != 4){
+					log_xhr.abort();
+				}
+				log_xhr = jQuery.ajax({
+					method: "GET",
+					dataType: "text",
+					url: "{{ url_for('api_user_log', name=user.name) }}",
+					success: function (data) {
+						$("#userlogdiv").html(data);
 					}
 				});
 
@@ -223,8 +255,11 @@ $(".buylink").click(
 			},
 			error: function() {
 				aele.data('count', aele.data('count') -1);
+				aele.data('ajaxrunning', aele.data('ajaxrunning') -1);
+				updateitem($('.boximage', aele),true);
 			}
 		});
+		updateitem($('.boximage', aele),false);
 	}
 );
 function resizeIframe(obj){

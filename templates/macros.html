@@ -1,0 +1,23 @@
+{% macro loglist(entries, user) %}
+	<ul class="list-unstyled">
+	{% for i in entries %}
+		<li class="logentry">
+			<a class="btn btn-default" href="{{ url_for('api_user_balance', name=user.name, newbalance=i.oldbalance, ref=request.url) }}"><span class="fa fa-undo"></span> </a>
+			{{i.time}} 
+			{% if i.methode == "buy" %}
+			bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj)|itemprice|euro }}
+			{% elif i.methode == "recharge" %}
+			recharged balance with {{ (i.parameter|itemidtoobj)|itemprice|abs|euro }}
+			{% elif i.methode == "set_balance" %}
+			set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
+			{% elif i.methode == "transferTo" %}
+			transferd {{ (i.oldbalance - i.newbalance)|euro }} to <a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a>{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
+			{% elif i.methode == "transferFrom" %}
+			<a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a> transferd {{ (i.newbalance - i.oldbalance)|euro }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
+			{% else %}
+			something is broken ({{ i|pprint }})
+			{% endif %}
+		</li>
+	{% endfor %}
+	</ul>
+{% endmacro %}

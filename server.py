@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g, session, Response, redirect, request, url_for, flash
+from flask import Flask, render_template, render_template_string, g, session, Response, redirect, request, url_for, flash
 from functools import wraps
 import sqlite3
 import hashlib
