@@ -24,7 +24,7 @@
 							data: { 'newbalance': newbalance },
 							url: "{{ url_for('api_user_balance', name=user.name) }}",
 							success: function (data) {
-								window.location = "{{ request.url }}"
+								window.location = "{{ url_for('userpage', name=user.name) }}"
 							}
 						});
 					}
@@ -55,7 +55,7 @@
 			<div id="group_{{ g.id }}" class="panel-collapse collapse in">
 				<div class="panel-body row">
 					{% for i in items if i.group_id == g.id %}
-					<a href="{{ url_for('api_user_buy', name=user.name, itemid=i.id, ref=request.url+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" data-count="0" data-ajaxrunning="0" data-infotimeout="0" style="height: 180px;">
+					<a href="{{ url_for('api_user_buy', name=user.name, itemid=i.id, ref=url_for('userpage', name=user.name)+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" data-count="0" data-ajaxrunning="0" data-infotimeout="0" style="height: 180px;">
 						<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}'); text-align: center;">
 							<!-- status --!>
 						</div>
