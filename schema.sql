@@ -3,13 +3,13 @@ BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS 'user' (
 	id		integer primary key autoincrement,
-	name		varchar(255) default 'user',
+	name		varchar(255) default 'user' unique,
 	picture_id	integer default NULL,
 	mail		varchar(255) default '',
 	balance		integer default 0,
 	deleted		boolean not null default 0 check (deleted IN (0,1)),
-	transaction_mail BOOLEAN not NULL default 0 CHECK (transaction_mail IN (0,1)),
-	allow_logging	BOOLEAN not NULL default 0 CHECK (allow_logging IN (0,1))
+	transaction_mail boolean not NULL default 0 CHECK (transaction_mail IN (0,1)),
+	allow_logging	boolean not NULL default 0 CHECK (allow_logging IN (0,1))
 );
 CREATE TABLE IF NOT EXISTS 'item' (
 	id		integer primary key autoincrement,
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS 'item' (
 	price		integer default 0,
 	purchasingprice	integer default 0,
 	info_public	text default '',
-	deleted		BOOLEAN NOT NULL default 0 CHECK (deleted IN (0,1))
+	deleted		boolean NOT NULL default 0 CHECK (deleted IN (0,1))
 );
 CREATE TABLE IF NOT EXISTS 'pictures' (
 	id		integer primary key autoincrement,
@@ -39,20 +39,10 @@ CREATE TABLE IF NOT EXISTS 'log' (
 	newbalance 	integer,
 	parameter	integer
 );
-CREATE TABLE IF NOT EXISTS 'stats' (
-	id		integer primary key autoincrement,
-	item_id 	integer,
-	time		timestamp default current_timestamp
-);
 CREATE TABLE IF NOT EXISTS 'barcode' (
 	id		varchar(255) primary key,
 	type		varchar(255) default 'item',
 	parameter	integer default -1
-);
-CREATE TABLE IF NOT EXISTS 'mail' (
-	id		integer primary key autoincrement,
-	'to'		varchar(255),
-	content		text
 );
 
 COMMIT
