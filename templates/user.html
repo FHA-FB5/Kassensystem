@@ -6,7 +6,7 @@
 		<div class="boximage" style="background-image: url('{% if user.picture_id|d(-1) != -1 %}{{ url_for('get_img', imgid=user.picture_id|d(-1)) }}{% else %}https://www.gravatar.com/avatar/{{ user.mail|lower|md5}}?s=200{% endif %}');" ></div>
 	</div>
 	<div class="col-xs-12 col-sm-7" style="margin-bottom: 20px">
-		<div><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3><button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button></div>
+		<div style="margin-bottom: 40px"><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3><button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button></div>
 		<div>
 			<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
 			<button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
@@ -33,7 +33,7 @@
 			);
 		</script>
 		<div><h4 id="userlog">log:</h4></div>
-		<div id="userlogdiv">
+		<div id="userlogdiv" style="overflow-y: scroll; max-height: 18em;">
 			{{ loglist(log, user) }}
 		</div>
 	</div>
@@ -205,7 +205,7 @@ $(".buylink").click(
 				aele.data("infotimeout", setTimeout(function() {
 					aele.data('count',0);
 					$("span",container).fadeOut("slow");
-				}, 4000));
+				}, 2500));
 			}
 			str += '"> '
 			str += "" + aele.data('count') - aele.data('ajaxrunning') +'/' + aele.data('count');

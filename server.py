@@ -269,7 +269,7 @@ def userpage(name=None, id=None):
 	else:
 		user = user[0]
 	users=query('SELECT * FROM user')
-	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 5', user['name'])
+	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 50', user['name'])
 	groups=query('SELECT * FROM "group" ORDER BY sortorder ')
 	items=query('SELECT * FROM "item" WHERE deleted=0 ')
 	return render_template('user.html', user=user, log=log, groups=groups, items=items, users=users )

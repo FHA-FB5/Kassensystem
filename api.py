@@ -176,7 +176,7 @@ def date_json_handler(obj):
 @app.route("/api/user/<name>/log")
 def api_user_log(name):
 	resulttype = request.values.get('type', 'html')
-	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 5', name)
+	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 50', name)
 	user=query('SELECT * from user WHERE name = ?', name)[0]
 	if resulttype == 'json':
 		return json.dumps(log, default=date_json_handler)
