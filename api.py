@@ -122,7 +122,7 @@ def api_img_add(imgid=None):
 			img.thumbnail((200,200) , Image.ANTIALIAS)
 			img.save(tmp,format="PNG")
 		newid = modify("INSERT INTO pictures (data) values (?)",sqlite3.Binary(tmp.getvalue()))
-		return redirect(url_for("add_img",imgid=newid))
+		return redirect(url_for("api_img_img",imgid=newid))
 	else:
 		# TODO why!?!
 		return render_template('imgupload.html', pictures=query("SELECT id from pictures"), selected=imgid)
