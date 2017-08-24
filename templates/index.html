@@ -18,7 +18,7 @@
 </div>
 
 <div class="modal fade" id="addusermodal" tabindex="-1" role="dialog">
-	<form method="POST" action="{{ url_for('adduser') }}">
+	<form method="POST" action="{{ url_for('api_user_add', ref=url_for('index')) }}">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content" style="background-color: #222">
 				<div class="modal-header">

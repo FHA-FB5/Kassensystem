@@ -13,7 +13,7 @@
 			</form>
 			<div class="col-xs-12">
 				{% for i in pictures %}
-					<a href="{{ url_for('add_img', imgid=i.id) }}">
+					<a href="{{ url_for('api_img_add', imgid=i.id) }}">
 						<div class="box" style="float: left; margin-right: 20px; {% if i.id == selected %}background-color: white;{% endif %}">
 							<div  id="itemimg_{{ i.id }}" class="boximage" data-id="{{ i.id }}" style="20px; background-color: #0b1b40; background-image: url('{{ url_for('get_img', imgid=i.id) }}');"></div>
 						</div>
