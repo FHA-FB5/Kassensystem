@@ -63,6 +63,7 @@
 							{% if not isadmin() %}
 							<a href="{{url_for('login', ref=request.url)}}" id="loginpopover" data-container="body" data-toggle="popover" data-placement="bottom"> 
 								<span class="glyphicon glyphicon-log-in"></span>
+								Admin area
 							</a>
 							<script>
 								$('#loginpopover').on('click',function(e){
