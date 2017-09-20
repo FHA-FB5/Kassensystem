@@ -42,7 +42,7 @@ def api_user_edit(name):
 		args.append(True)
 	else:
 		args.append(False)
-	args.append(int(request.values.get('picture_id', -1)))
+	args.append(request.values.get('picture_id', -1, type=int))
 	args.append(name)
 
 	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ? WHERE name = ?", *args)
