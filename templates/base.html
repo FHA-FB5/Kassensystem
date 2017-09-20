@@ -5,7 +5,7 @@
 	<head>
 		{% block header %}
 		<meta charset="UTF-8">
-		<title>CCCAC - M.U.K.A.S{% block title %}{% for endpoint, caption, iconlib, gly, visible in navbar if ((visible or isadmin()) and (endpoint == request.endpoint)) %}- {{ caption }}{% else%}{% endfor %}{% endblock %}
+		<title>MUKAS - CCCAC{% block title %}{% for endpoint, caption, iconlib, gly, visible in navbar if ((visible or isadmin()) and (endpoint == request.endpoint)) %}- {{ caption }}{% else%}{% endfor %}{% endblock %}
 		</title>
 		
 		<script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
