@@ -17,7 +17,7 @@
 				function () {
 					var rawinput = prompt("New balance:",{{ user.balance }}/100.0);
 					if (rawinput != null) {
-						var newbalance = parseInt(parseFloat(rawinput)*100);
+						var newbalance = parseInt(parseFloat(rawinput.replace(',','.'))*100);
 						jQuery.ajax({
 							method: "POST",
 							dataType: "text",
