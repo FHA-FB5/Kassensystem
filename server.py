@@ -184,7 +184,10 @@ def index():
 @app.route("/items")
 @admin_required
 def itemlist():
-	return render_template('itemlist.html', groups=query('SELECT * FROM "group" ORDER BY sortorder '), items=query('SELECT * FROM "item" WHERE deleted=0 or deleted=? ORDER BY name', request.values.get('showdeleted', 0)))
+	return render_template('itemlist.html',
+			groups=query('SELECT * FROM "group" ORDER BY sortorder '),
+			items=query('SELECT * FROM "item" WHERE deleted=0 or deleted=? ORDER BY name',
+				request.values.get('showdeleted', 0)))
 
 @register_navbar('Groups', icon='object-group', iconlib='fa')
 @app.route("/groups")

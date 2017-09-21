@@ -80,11 +80,11 @@ def api_user_transfer(sender):
 
 	amount = int(float(request.values.get('amount', 0))*100)
 	args.append(request.values.get('reason', ''))
-		
-	query('UPDATE user SET balance = balance - ? WHERE id = ?', amount , sender['id'])
+	
+	query('UPDATE user SET balance = balance - ? WHERE id = ?', amount, sender['id'])
 	log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transferTo', recipient['id'])
 
-	query('UPDATE user SET balance = balance + ? WHERE id = ?', amount , recipient['id'])
+	query('UPDATE user SET balance = balance + ? WHERE id = ?', amount, recipient['id'])
 	log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transferFrom', sender['id'])
 	
 	if ref:
@@ -142,7 +142,7 @@ def api_user_buy(name, itemid):
 	if request.values.get('noref', False):
 		return 'OK'
 	else:
-		ref= request.values.get('ref', None)
+		ref = request.values.get('ref', None)
 		if ref:
 			return redirect(ref)
 		else:
