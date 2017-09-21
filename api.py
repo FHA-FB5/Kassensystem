@@ -53,7 +53,7 @@ def api_user_edit(name):
 	else:
 		return 'OK'
 
-@app.route("/api/user/<sender>/transfer", methods=['POST'])
+@app.route("/api/user/<sender>/transfer", methods=['GET', 'POST'])
 @csrf_protect
 def api_user_transfer(sender):
 	ref= request.values.get('ref', None)
