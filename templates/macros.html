@@ -2,7 +2,13 @@
 	<ul class="list-unstyled">
 	{% for i in entries %}
 		<li class="logentry">
-			<a class="btn btn-default" href="{{ url_for('api_user_balance', name=user.name, newbalance=i.oldbalance, ref=request.url) }}"><span class="fa fa-undo"></span> </a>
+			<a class="btn btn-default" href="
+			{%- if i.method in ['transferTo', 'transferFrom'] %}
+			{{- url_for('api_user_transfer', sender=user.name, recipient=(i.parameter|useridtoobj).name, amount=(i.newbalance - i.oldbalance)/100, ref=request.url) -}}
+			{% else %}
+			{{- url_for('api_user_balance', name=user.name, newbalance=i.oldbalance, ref=request.url) -}}
+			{% endif -%}
+			"><span class="fa fa-undo"></span> </a>
 			{{i.time}} 
 			{% if i.method == "buy" %}
 			bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj)|itemprice|euro }}
