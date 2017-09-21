@@ -160,7 +160,7 @@ def api_user_balance(name, newbalance=None):
 		log_action(user['id'], user['balance'], newbalance, 'set_balance', 0)
 	else:
 		data = query('SELECT balance FROM user WHERE name = ?', name)[0]['balance']
-		if request.values.get('formated', False):
+		if request.values.get('formatted', False):
 			return euro(data)
 		else:
 			return str(data)

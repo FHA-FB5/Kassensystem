@@ -234,7 +234,7 @@ $(".buylink").click(
 					method: "GET",
 					dataType: "text",
 					url: "{{ url_for('api_user_balance', name=user.name) }}",
-					data: {"formated": 1},
+					data: {"formatted": 1},
 					success: function (data) {
 						$("#userbalance").text(data);
 					}
