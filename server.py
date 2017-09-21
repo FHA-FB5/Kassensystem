@@ -171,9 +171,9 @@ def register_navbar(name, iconlib='bootstrap', icon=None, visible=False):
 		return func
 	return wrapper
 
-def log_action(userid,old,new,methode,parameter):
+def log_action(userid,old,new,method,parameter):
 	if useridtoobj(userid)['allow_logging']:
-		query('INSERT INTO "log" (user_id, methode, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, methode, old, new, parameter)
+		query('INSERT INTO "log" (user_id, method, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, method, old, new, parameter)
 
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
 @app.route("/")

@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS 'log' (
 	id		integer primary key autoincrement,
 	user_id 	integer,
 	time		timestamp default current_timestamp,
-	methode		varchar(255),
+	method		varchar(255),
 	oldbalance 	integer ,
 	newbalance 	integer,
 	parameter	integer
