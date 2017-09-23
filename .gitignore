@@ -1,4 +1,6 @@
 db.sqlite*
 config.py
+htmlcov
+.coverage
 *.swp
 *.pyc

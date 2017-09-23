@@ -18,17 +18,20 @@ app.jinja_env.trim_blocks = True
 app.jinja_env.lstrip_blocks = True
 
 config = app.config
-config.from_pyfile('config.py', silent=True)
-if not config.get('SECRET_KEY', None):
-        config['SECRET_KEY'] = os.urandom(32)
-if config['DEBUG']:
-        app.jinja_env.auto_reload = True
+config['SECRET_KEY'] = os.urandom(32)
 
-db = sqlite3.connect(config['SQLITE_DB'])
-cur = db.cursor()
-cur.executescript(app.open_resource('schema.sql', mode='r').read())
-db.commit()
-db.close()
+def load_config_file():
+	config.from_pyfile('config.py', silent=True)
+	if config['DEBUG']:
+		app.jinja_env.auto_reload = True
+
+def init_db():
+	db = sqlite3.connect(config['SQLITE_DB'])
+	cur = db.cursor()
+	with app.open_resource('schema.sql', mode='r') as schema_file:
+		cur.executescript(schema_file.read())
+	db.commit()
+	db.close()
 
 def get_dbcursor():
 	if 'db' not in g:
@@ -144,6 +147,8 @@ def csrf_protect(func):
 			token = request.get_json()['_csrf_token']
 		else:
 			token = None
+		if app.testing:
+			return func(*args, **kwargs)
 		if not ('_csrf_token' in session) or (session['_csrf_token'] != token ) or not token:
 			return 'csrf test failed', 403
 		else:
