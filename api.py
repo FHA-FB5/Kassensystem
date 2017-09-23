@@ -4,7 +4,7 @@ import json
 @app.route("/api/user/add", methods=['POST'])
 @csrf_protect
 def api_user_add():
-	ref= request.values.get('ref', None)
+	ref = request.values.get('ref', None)
 	if request.values.get('name', '') == '':
 		if ref:
 			return redirect(ref)
@@ -47,7 +47,7 @@ def api_user_edit(name):
 
 	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ? WHERE name = ?", *args)
 	
-	ref= request.values.get('ref', None)
+	ref = request.values.get('ref', None)
 	if ref:
 		return redirect(ref)
 	else:
@@ -56,7 +56,7 @@ def api_user_edit(name):
 @app.route("/api/user/<sender>/transfer", methods=['GET', 'POST'])
 @csrf_protect
 def api_user_transfer(sender):
-	ref= request.values.get('ref', None)
+	ref = request.values.get('ref', None)
 	args = []
 	sender = query('SELECT * FROM user WHERE name = ?', sender)
 	if not len(sender) == 1:
