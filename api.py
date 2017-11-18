@@ -21,8 +21,12 @@ def api_user_add():
 		args.append(True)
 	else:
 		args.append(False)
+	try:
+		query("INSERT INTO user (name, mail, transaction_mail, allow_logging) VALUES (?, ?, ?, ?)", *args)
+	except sqlite3.IntegrityError:
+		flash('Username already taken.')
+		return redirect(ref)
 
-	query("INSERT INTO user (name, mail, transaction_mail, allow_logging) VALUES (?, ?, ?, ?)", *args)
 	if ref:
 		return redirect(ref)
 	else:
