@@ -85,6 +85,50 @@ class MukasTestCase(unittest.TestCase):
 		assert r.status_code != 200
 		assert r.data != b'OK'
 
+	def test_api_transfer(self):
+		r = self.app.post('/api/user/add', data={
+			'name': 'transfer_foo',
+			})
+		assert r.status_code == 200
+		r = self.app.post('/api/user/add', data={
+			'name': 'transfer_bar',
+			})
+		assert r.status_code == 200
+
+		r = self.app.post('/api/user/transfer_foo/transfer', data={
+			'recipient': 'transfer_bar',
+			'amount': '23',
+			})
+		assert r.status_code == 200
+		assert r.data == b'OK'
+
+	def test_api_transfer_nonexistent_recipient(self):
+		r = self.app.post('/api/user/add', data={
+			'name': 'transfer_foo',
+			})
+		assert r.status_code == 200
+
+		r = self.app.post('/api/user/transfer_foo/transfer', data={
+			'recipient': 'transfer_bar',
+			'amount': '23',
+			})
+		assert r.status_code != 200
+		assert r.data != b'OK'
+
+	def test_api_transfer_nonexistent_sender(self):
+		r = self.app.post('/api/user/add', data={
+			'name': 'transfer_bar',
+			})
+		assert r.status_code == 200
+
+		r = self.app.post('/api/user/transfer_foo/transfer', data={
+			'recipient': 'transfer_bar',
+			'amount': '23',
+			})
+		assert r.status_code != 200
+		assert r.data != b'OK'
+
+
 if __name__ == '__main__':
 	unittest.main()
 
