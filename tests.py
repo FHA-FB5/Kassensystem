@@ -128,6 +128,38 @@ class MukasTestCase(unittest.TestCase):
 		assert r.status_code != 200
 		assert r.data != b'OK'
 
+	def test_server_userpage(self):
+		r = self.app.post('/api/user/add', data={
+			'name': 'foo',
+			})
+		assert r.status_code == 200
+
+		r = self.app.get('/u/foo')
+		assert r.status_code == 200
+
+	def test_server_userpage_nonexistent_user(self):
+		r = self.app.get('/u/foo')
+		assert r.status_code != 200
+		with self.app.session_transaction() as session:
+			flashes = dict(session['_flashes'])
+			assert 'does not exist' in flashes['message']
+
+	def test_server_itemprice(self):
+		item = {'price': 2342, 'purchasingprice': 4200}
+		assert server.itemprice(item) == 2342
+
+		item = {'price': None, 'purchasingprice': 1235}
+		assert server.itemprice(item) == 1500
+
+		item = {'price': None, 'purchasingprice': -1235}
+		assert server.itemprice(item) == -1500
+
+		item = {'price': None, 'purchasingprice': 1000}
+		assert server.itemprice(item) == 1200
+
+		item = {'price': None, 'purchasingprice': -1000}
+		assert server.itemprice(item) == -1200
+
 
 if __name__ == '__main__':
 	unittest.main()
