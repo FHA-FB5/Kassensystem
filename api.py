@@ -35,6 +35,11 @@ def api_user_add():
 @app.route("/api/user/<name>/edit", methods=['POST'])
 @csrf_protect
 def api_user_edit(name):
+	ref = request.values.get('ref', None)
+	user = query('SELECT * FROM user WHERE name = ?', name)
+	if len(user) != 1:
+		return "user not found", 409
+
 	args = []
 	args.append(request.values.get('name', ''))
 	args.append(request.values.get('mail', ''))
@@ -51,7 +56,6 @@ def api_user_edit(name):
 
 	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ? WHERE name = ?", *args)
 	
-	ref = request.values.get('ref', None)
 	if ref:
 		return redirect(ref)
 	else:
