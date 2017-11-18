@@ -38,7 +38,7 @@ def api_user_edit(name):
 	ref = request.values.get('ref', None)
 	user = query('SELECT * FROM user WHERE name = ?', name)
 	if len(user) != 1:
-		return "user not found", 409
+		return "User not found", 404
 
 	args = []
 	args.append(request.values.get('name', ''))
