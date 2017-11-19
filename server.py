@@ -274,7 +274,7 @@ def log_action(userid, old, new, method, parameter, reason=None):
 		msg = '{}\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'.format(logentrytotext(entry,user))
 		mail = 'To: {} <{}>\nFrom: M.U.K.A.S <noreply@aachen.ccc.de>\nSubject: M.U.K.A.S Transaction Notification\nContent-Type: text/plain; charset=utf-8\n\n{}'.format(user['name'],user['mail'],msg)
 		proc = subprocess.Popen(['sendmail', user['mail']], stdin=subprocess.PIPE)
-		proc.stdin.write(mail)
+		proc.stdin.write(mail.encode())
 		childprocess.append(proc)
 
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
