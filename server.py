@@ -26,6 +26,7 @@ app.jinja_env.lstrip_blocks = True
 config = app.config
 config['SECRET_KEY'] = os.urandom(32)
 
+
 childprocess = []
 scheduler = sched.scheduler()
 def run_scheduler():
@@ -57,6 +58,22 @@ def clearchilds():
 			continue
 		p.wait()
 		procs.remove(p)
+def load_config_file():
+	config.from_pyfile('config.py', silent=True)
+	if config['DEBUG']:
+		app.jinja_env.auto_reload = True
+
+def init_db():
+	db = sqlite3.connect(config['SQLITE_DB'])
+	cur = db.cursor()
+	with app.open_resource('schema.sql', mode='r') as schema_file:
+		cur.executescript(schema_file.read())
+	db.commit()
+	db.close()
+
+load_config_file()
+init_db()
+
 def date_json_handler(obj):
 	return obj.isoformat() if hasattr(obj, 'isoformat') else obj
 
@@ -102,18 +119,6 @@ def logentrytotext(inputentry, user, html=True):
 	else:
 		return '{} {}'.format(entry['time'], desc)
 
-def load_config_file():
-	config.from_pyfile('config.py', silent=True)
-	if config['DEBUG']:
-		app.jinja_env.auto_reload = True
-
-def init_db():
-	db = sqlite3.connect(config['SQLITE_DB'])
-	cur = db.cursor()
-	with app.open_resource('schema.sql', mode='r') as schema_file:
-		cur.executescript(schema_file.read())
-	db.commit()
-	db.close()
 
 def get_dbcursor():
 	if 'db' not in g:
