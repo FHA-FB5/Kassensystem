@@ -89,14 +89,17 @@ def logentrytotext(inputentry, user, html=True):
 			entry[i] = None
 	if entry['method'] in ['transferTo', 'transferFrom']:
 		undolink = url_for('api_user_transfer', sender=user['name'], recipient=(useridtoobj(entry['parameter'])['name']), amount=(entry['newbalance'] - entry['oldbalance'])/100, ref=request.url)
+	elif entry['method'] in ['buy', 'recharge']:
+		newbalance = entry['oldbalance'] - entry['newbalance'] + user['balance']
+		undolink = url_for('api_user_balance', name=user['name'], newbalance=newbalance, ref=request.url)
 	else:
 		undolink = url_for('api_user_balance', name=user['name'], newbalance=entry['oldbalance'], ref=request.url)
 
 	desc = 'something is broken: '+json.dumps(entry, default=date_json_handler)
 	if entry['method'] == "buy":
-		desc = 'bought {} for {}'.format(itemidtoobj(entry['parameter'])['name'], euro(itemidtoobj(entry['parameter'])['itemprice']))
+		desc = 'bought {} for {}'.format(itemidtoobj(entry['parameter'])['name'], euro(itemprice(itemidtoobj(entry['parameter']))))
 	elif entry['method'] == "recharge":
-		desc = 'recharged balance with {}'.format(euro(math.abs(itemidtoobj(entry['parameter'])['itemprice'])))
+		desc = 'recharged balance with {}'.format(euro(abs(itemprice(itemidtoobj(entry['parameter'])))))
 	elif entry['method'] == "set_balance":
 		desc = 'set balance from {} to {}'.format(euro(entry['oldbalance']), euro(entry['newbalance']))
 	elif entry['method'] == "transferTo":
