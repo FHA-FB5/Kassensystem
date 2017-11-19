@@ -396,13 +396,15 @@ def valid_credentials(user, pw):
 
 	if not user or not pw:
 		return False
-	conn = Connection(
-		Server(config['LDAP_SERVER'], use_ssl=True),
-		config['LDAP_BINDSTRING'].format(user), pw)
-	if conn.bind():
-		return True
-	else:
+
+	bindstring = config['LDAP_BINDSTRING_USER'].format(user)
+	conn = Connection(Server(config['LDAP_SERVER'], use_ssl=True), bindstring, pw)
+	if not conn.bind():
 		return False
+	conn.search(config['LDAP_GROUPS'], config['LDAP_GROUP_FILTER'].format('admin'), attributes=[config['LDAP_GROUP_MEMBERS_ATTRIBUTE']])
+	members = conn.response[0]['attributes'][config['LDAP_GROUP_MEMBERS_ATTRIBUTE']]
+	conn.unbind()
+	return user in members
 
 @app.route("/logout")
 def logout():
