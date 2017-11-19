@@ -137,7 +137,9 @@ def delitem(itemid):
 def get_img(imgid=None):
 	data = query('SELECT data FROM pictures WHERE id = ?', imgid)
 	if len(data) == 1:
-		return Response(data[0]['data'], mimetype='image/png')
+		r = Response(data[0]['data'], mimetype='image/png')
+		r.headers['Cache-Control'] = 'public, max-age=315360000'
+		return r
 	else:
 		return 'Not found', 404
 
