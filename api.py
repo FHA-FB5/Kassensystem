@@ -5,14 +5,16 @@ import json
 @csrf_protect
 def api_user_add():
 	ref = request.values.get('ref', None)
-	if request.values.get('name', '') == '':
+	name = request.values.get('name', '')
+	if name == '':
 		if ref:
 			return redirect(ref)
 		else:
 			return 'name is empty', 422
+	mail = request.values.get('mail', '')
 	args = []
 	args.append(request.values.get('name', ''))
-	args.append(request.values.get('mail', ''))
+	args.append(mail)
 	if request.values.get('transaction_mail', False):
 		args.append(True)
 	else:
@@ -27,10 +29,33 @@ def api_user_add():
 		flash('Username already taken.')
 		return redirect(ref)
 
+	if mail != '':
+		img_data = load_gravatar(mail)
+		if img_data:
+			fp = io.BytesIO()
+			fp.write(img_data)
+			picture_id = import_image(fp)
+			if picture_id:
+				print(repr(picture_id))
+				query('UPDATE user SET picture_id = ? WHERE name = ?', picture_id, name)
+
 	if ref:
 		return redirect(ref)
 	else:
 		return 'OK'
+
+def load_gravatar(mail):
+	import hashlib
+	import requests
+
+	mailhash = hashlib.md5(mail.encode()).hexdigest()
+	url = 'https://www.gravatar.com/avatar/{}?s=200&d=404'.format(mailhash)
+	res = requests.get(url)
+	print(url)
+	if res.status_code == 404:
+		return None
+	bytes_ = next(res.iter_content(chunk_size=1024**3))
+	return bytes_
 
 @app.route("/api/user/<name>/edit", methods=['POST'])
 @csrf_protect
@@ -120,20 +145,24 @@ def get_img(imgid=None):
 @app.route("/api/img/add", methods=['GET', 'POST'])
 @app.route("/api/img/add/<imgid>", methods=['GET', 'POST'])
 def api_img_add(imgid=None):
-	if imgid:
-		imgid = int(imgid)
 	if (request.method == 'POST') and ('img' in request.files):
-		img = Image.open(request.files['img'])
-		tmp = io.BytesIO()
-		with img:
-			img.load()
-			img.thumbnail((200,200) , Image.ANTIALIAS)
-			img.save(tmp,format="PNG")
-		newid = modify("INSERT INTO pictures (data) values (?)",sqlite3.Binary(tmp.getvalue()))
+		newid = import_image(request.files['img'])
 		return redirect(url_for("api_img_add",imgid=newid))
 	else:
 		# TODO why!?!
+		if imgid:
+			imgid = int(imgid)
 		return render_template('imgupload.html', pictures=query("SELECT id from pictures"), selected=imgid)
+
+def import_image(fp):
+	img = Image.open(fp)
+	tmp = io.BytesIO()
+	with img:
+		img.load()
+		img.thumbnail((200,200) , Image.ANTIALIAS)
+		img.save(tmp,format="PNG")
+	newid = modify("INSERT INTO pictures (data) values (?)",sqlite3.Binary(tmp.getvalue()))
+	return newid
 
 @app.route("/api/user/<name>/buy/<int:itemid>")
 @csrf_protect
