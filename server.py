@@ -381,13 +381,28 @@ def login():
 	if request.method == 'GET':
 		return render_template('login.html')
 	user, pw = request.form.get('user'), request.form.get('password')
-	if not True:
+	if not valid_credentials(user, pw):
 		flash('Login failed!')
 		return render_template('login.html')
 	session['user'] = user
 	session['loggedin'] = True
 	session['logindate'] = datetime.datetime.now()
 	return redirect(request.values.get('ref', url_for('index')))
+
+
+
+def valid_credentials(user, pw):
+	from ldap3 import Server, Connection
+
+	if not user or not pw:
+		return False
+	conn = Connection(
+		Server(config['LDAP_SERVER'], use_ssl=True),
+		config['LDAP_BINDSTRING'].format(user), pw)
+	if conn.bind():
+		return True
+	else:
+		return False
 
 @app.route("/logout")
 def logout():
