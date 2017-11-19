@@ -48,6 +48,9 @@ def load_gravatar(mail):
 	import hashlib
 	import requests
 
+	if not mail or mail == '':
+		return None
+
 	mailhash = hashlib.md5(mail.encode()).hexdigest()
 	url = 'https://www.gravatar.com/avatar/{}?s=200&d=404'.format(mailhash)
 	res = requests.get(url)

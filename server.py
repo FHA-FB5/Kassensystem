@@ -89,14 +89,17 @@ def logentrytotext(inputentry, user, html=True):
 			entry[i] = None
 	if entry['method'] in ['transferTo', 'transferFrom']:
 		undolink = url_for('api_user_transfer', sender=user['name'], recipient=(useridtoobj(entry['parameter'])['name']), amount=(entry['newbalance'] - entry['oldbalance'])/100, ref=request.url)
+	elif entry['method'] in ['buy', 'recharge']:
+		newbalance = entry['oldbalance'] - entry['newbalance'] + user['balance']
+		undolink = url_for('api_user_balance', name=user['name'], newbalance=newbalance, ref=request.url)
 	else:
 		undolink = url_for('api_user_balance', name=user['name'], newbalance=entry['oldbalance'], ref=request.url)
 
 	desc = 'something is broken: '+json.dumps(entry, default=date_json_handler)
 	if entry['method'] == "buy":
-		desc = 'bought {} for {}'.format(itemidtoobj(entry['parameter'])['name'], euro(itemidtoobj(entry['parameter'])['itemprice']))
+		desc = 'bought {} for {}'.format(itemidtoobj(entry['parameter'])['name'], euro(itemprice(itemidtoobj(entry['parameter']))))
 	elif entry['method'] == "recharge":
-		desc = 'recharged balance with {}'.format(euro(math.abs(itemidtoobj(entry['parameter'])['itemprice'])))
+		desc = 'recharged balance with {}'.format(euro(abs(itemprice(itemidtoobj(entry['parameter'])))))
 	elif entry['method'] == "set_balance":
 		desc = 'set balance from {} to {}'.format(euro(entry['oldbalance']), euro(entry['newbalance']))
 	elif entry['method'] == "transferTo":
@@ -271,7 +274,8 @@ def log_action(userid, old, new, method, parameter, reason=None):
 		msg = '{}\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'.format(logentrytotext(entry,user))
 		mail = 'To: {} <{}>\nFrom: M.U.K.A.S <noreply@aachen.ccc.de>\nSubject: M.U.K.A.S Transaction Notification\nContent-Type: text/plain; charset=utf-8\n\n{}'.format(user['name'],user['mail'],msg)
 		proc = subprocess.Popen(['sendmail', user['mail']], stdin=subprocess.PIPE)
-		proc.stdin.write(mail)
+		proc.stdin.write(mail.encode())
+		proc.stdin.close()
 		childprocess.append(proc)
 
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
@@ -396,13 +400,15 @@ def valid_credentials(user, pw):
 
 	if not user or not pw:
 		return False
-	conn = Connection(
-		Server(config['LDAP_SERVER'], use_ssl=True),
-		config['LDAP_BINDSTRING'].format(user), pw)
-	if conn.bind():
-		return True
-	else:
+
+	bindstring = config['LDAP_BINDSTRING_USER'].format(user)
+	conn = Connection(Server(config['LDAP_SERVER'], use_ssl=True), bindstring, pw)
+	if not conn.bind():
 		return False
+	conn.search(config['LDAP_GROUPS'], config['LDAP_GROUP_FILTER'].format('admin'), attributes=[config['LDAP_GROUP_MEMBERS_ATTRIBUTE']])
+	members = conn.response[0]['attributes'][config['LDAP_GROUP_MEMBERS_ATTRIBUTE']]
+	conn.unbind()
+	return user in members
 
 @app.route("/logout")
 def logout():
