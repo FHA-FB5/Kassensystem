@@ -9,7 +9,6 @@ import os
 import datetime
 from PIL import Image
 import io
-import threading
 import traceback
 import json
 import queue
@@ -24,18 +23,6 @@ app.jinja_env.lstrip_blocks = True
 config = app.config
 config['SECRET_KEY'] = os.urandom(32)
 
-
-mail_out = queue.Queue()
-def mail_sender():
-	import smtplib
-
-	print('mail sender started')
-	while True:
-		mail = mail_out.get()
-		s = smtplib.SMTP(config['SMTPSERVER'])
-		s.send_message(mail)
-		s.quit()
-threading.Thread(target=mail_sender, daemon=True).start()
 
 def load_config_file():
 	config.from_pyfile('config.py', silent=True)
@@ -246,6 +233,7 @@ def register_navbar(name, iconlib='bootstrap', icon=None, visible=False):
 
 def log_action(userid, old, new, method, parameter, reason=None):
 	from email.message import EmailMessage
+	import smtplib
 
 	user = useridtoobj(userid)
 	if user['allow_logging']:
@@ -258,7 +246,9 @@ def log_action(userid, old, new, method, parameter, reason=None):
 		msg['Subject'] = 'M.U.K.A.S Transaction Notification'
 		msg['From'] = 'M.U.K.A.S <noreply@aachen.ccc.de>'
 		msg['To'] = "{} <{}>".format(user['name'],user['mail'])
-		mail_out.put(msg)
+		s = smtplib.SMTP(config['SMTPSERVER'])
+		s.send_message(msg)
+		s.quit()
 
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
 @app.route("/")
