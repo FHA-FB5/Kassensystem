@@ -9,12 +9,10 @@ import os
 import datetime
 from PIL import Image
 import io
-import subprocess
 import threading
-import sched
 import traceback
 import json
-import time
+import queue
 
 locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
 
@@ -27,37 +25,18 @@ config = app.config
 config['SECRET_KEY'] = os.urandom(32)
 
 
-childprocess = []
-scheduler = sched.scheduler()
-def run_scheduler():
-	time.sleep(1) # weird things on startup
+mail_out = queue.Queue()
+def mail_sender():
+	import smtplib
+
+	print('mail sender started')
 	while True:
-		scheduler.run()
-		time.sleep(1)
+		mail = mail_out.get()
+		s = smtplib.SMTP(config['SMTPSERVER'])
+		s.send_message(mail)
+		s.quit()
+threading.Thread(target=mail_sender, daemon=True).start()
 
-def sched_func(delay, priority=0, firstdelay=None, args=[], kargs={}):
-	if firstdelay == None:
-		firstdelay = random.randint(1, 10)
-	def wrapper(func):
-		def sched_wrapper():
-			try:
-				func(*args, **kargs)
-			except Exception:
-				traceback.print_exc()
-			scheduler.enter(delay, priority, sched_wrapper)
-		scheduler.enter(firstdelay, priority, sched_wrapper)
-		return func
-	return wrapper
-threading.Thread(target=run_scheduler, daemon=True).start()
-
-@sched_func(60)
-def clearchilds():
-	for p in childprocess:
-		p.poll()
-		if p.returncode == None:
-			continue
-		p.wait()
-		procs.remove(p)
 def load_config_file():
 	config.from_pyfile('config.py', silent=True)
 	if config['DEBUG']:
@@ -266,17 +245,20 @@ def register_navbar(name, iconlib='bootstrap', icon=None, visible=False):
 	return wrapper
 
 def log_action(userid, old, new, method, parameter, reason=None):
+	from email.message import EmailMessage
+
 	user = useridtoobj(userid)
 	if user['allow_logging']:
 		query('INSERT INTO "log" (user_id, method, oldbalance, newbalance, parameter, reason) values (?, ?, ?, ?, ?, ?)', userid, method, old, new, parameter, reason)
 	if user['transaction_mail']:
 		entry = { "user_id": userid, "method": method, "oldbalance": old, "newbalance": new, "parameter": parameter, "reason": reason, "time": datetime.datetime.now() }
-		msg = '{}\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'.format(logentrytotext(entry,user))
-		mail = 'To: {} <{}>\nFrom: M.U.K.A.S <noreply@aachen.ccc.de>\nSubject: M.U.K.A.S Transaction Notification\nContent-Type: text/plain; charset=utf-8\n\n{}'.format(user['name'],user['mail'],msg)
-		proc = subprocess.Popen(['sendmail', user['mail']], stdin=subprocess.PIPE)
-		proc.stdin.write(mail.encode())
-		proc.stdin.close()
-		childprocess.append(proc)
+		content = '{}\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'.format(logentrytotext(entry, user, html=False))
+		msg = EmailMessage()
+		msg.set_content(content)
+		msg['Subject'] = 'M.U.K.A.S Transaction Notification'
+		msg['From'] = 'M.U.K.A.S <noreply@aachen.ccc.de>'
+		msg['To'] = "{} <{}>".format(user['name'],user['mail'])
+		mail_out.put(msg)
 
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
 @app.route("/")
