@@ -9,7 +9,6 @@ import os
 import datetime
 from PIL import Image
 import io
-import psutil
 import subprocess
 import threading
 import sched
@@ -65,9 +64,12 @@ def date_json_handler(obj):
 def logentrytotext(inputentry, user, html=True):
 	entry = {}
 	for i in inputentry:
-		entry[i] = str(escape(inputentry[i]))
-		if i in ['oldbalance', 'newbalance', 'user_id', 'parameter']:
-			entry[i] = int(entry[i])
+		if inputentry[i] is not None:
+			entry[i] = str(escape(inputentry[i]))
+			if i in ['oldbalance', 'newbalance', 'user_id', 'parameter']:
+				entry[i] = int(entry[i])
+		else:
+			entry[i] = None
 	if entry['method'] in ['transferTo', 'transferFrom']:
 		undolink = url_for('api_user_transfer', sender=user['name'], recipient=(useridtoobj(entry['parameter'])['name']), amount=(entry['newbalance'] - entry['oldbalance'])/100, ref=request.url)
 	else:

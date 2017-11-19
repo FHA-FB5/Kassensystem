@@ -111,12 +111,13 @@ def api_user_transfer(sender):
 
 
 	amount = int(float(request.values.get('amount', 0))*100)
+	reason = request.values.get('reason')
 	
 	query('UPDATE user SET balance = balance - ? WHERE id = ?', amount, sender['id'])
-	log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transferTo', recipient['id'], request.values.get('reason', None))
+	log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transferTo', recipient['id'], reason)
 
 	query('UPDATE user SET balance = balance + ? WHERE id = ?', amount, recipient['id'])
-	log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transferFrom', sender['id'], request.values.get('reason', None))
+	log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transferFrom', sender['id'], reason)
 	
 	if ref:
 		return redirect(ref)
