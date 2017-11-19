@@ -150,6 +150,9 @@ def get_img(imgid=None):
 @app.route("/api/img/add/<imgid>", methods=['GET', 'POST'])
 def api_img_add(imgid=None):
 	if (request.method == 'POST') and ('img' in request.files):
+		if request.files['img'].filename == '':
+			flash('Please select an image')
+			return redirect(url_for("api_img_add"))
 		newid = import_image(request.files['img'])
 		return redirect(url_for("api_img_add",imgid=newid))
 	else:
