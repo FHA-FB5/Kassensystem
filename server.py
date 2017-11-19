@@ -1,4 +1,4 @@
-from flask import Flask, render_template, render_template_string, g, session, Response, redirect, request, url_for, flash
+from flask import Flask, render_template, render_template_string, g, session, Response, redirect, request, url_for, flash, escape
 from functools import wraps
 import sqlite3
 import hashlib
@@ -9,6 +9,13 @@ import os
 import datetime
 from PIL import Image
 import io
+import psutil
+import subprocess
+import threading
+import sched
+import traceback
+import json
+import time
 
 locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
 
@@ -19,6 +26,79 @@ app.jinja_env.lstrip_blocks = True
 
 config = app.config
 config['SECRET_KEY'] = os.urandom(32)
+
+childprocess = []
+scheduler = sched.scheduler()
+def run_scheduler():
+	time.sleep(1) # weird things on startup
+	while True:
+		scheduler.run()
+		time.sleep(1)
+
+def sched_func(delay, priority=0, firstdelay=None, args=[], kargs={}):
+	if firstdelay == None:
+		firstdelay = random.randint(1, 10)
+	def wrapper(func):
+		def sched_wrapper():
+			try:
+				func(*args, **kargs)
+			except Exception:
+				traceback.print_exc()
+			scheduler.enter(delay, priority, sched_wrapper)
+		scheduler.enter(firstdelay, priority, sched_wrapper)
+		return func
+	return wrapper
+threading.Thread(target=run_scheduler, daemon=True).start()
+
+@sched_func(60)
+def clearchilds():
+	for p in childprocess:
+		p.poll()
+		if p.returncode == None:
+			continue
+		p.wait()
+		procs.remove(p)
+def date_json_handler(obj):
+	return obj.isoformat() if hasattr(obj, 'isoformat') else obj
+
+@app.template_global()
+def logentrytotext(inputentry, user, html=True):
+	entry = {}
+	for i in inputentry:
+		entry[i] = str(escape(inputentry[i]))
+		if i in ['oldbalance', 'newbalance', 'user_id', 'parameter']:
+			entry[i] = int(entry[i])
+	if entry['method'] in ['transferTo', 'transferFrom']:
+		undolink = url_for('api_user_transfer', sender=user['name'], recipient=(useridtoobj(entry['parameter'])['name']), amount=(entry['newbalance'] - entry['oldbalance'])/100, ref=request.url)
+	else:
+		undolink = url_for('api_user_balance', name=user['name'], newbalance=entry['oldbalance'], ref=request.url)
+
+	desc = 'something is broken: '+json.dumps(entry, default=date_json_handler)
+	if entry['method'] == "buy":
+		desc = 'bought {} for {}'.format(itemidtoobj(entry['parameter'])['name'], euro(itemidtoobj(entry['parameter'])['itemprice']))
+	elif entry['method'] == "recharge":
+		desc = 'recharged balance with {}'.format(euro(math.abs(itemidtoobj(entry['parameter'])['itemprice'])))
+	elif entry['method'] == "set_balance":
+		desc = 'set balance from {} to {}'.format(euro(entry['oldbalance']), euro(entry['newbalance']))
+	elif entry['method'] == "transferTo":
+		if html:
+			desc = 'transfered {} to <a href="{}">{}</a>'.format(euro(entry['oldbalance']-entry['newbalance']), url_for('userpage', id=entry['parameter']), useridtoobj(entry['parameter'])['name'] )
+		else:
+			desc = 'transfered {} to {}'.format(euro(entry['oldbalance']-entry['newbalance']), useridtoobj(entry['parameter'])['name'] )
+		if entry['reason']:
+			desc += ' reason: "{}"'.format(entry['reason'])
+	elif entry['method'] == "transferFrom":
+		if html:
+			desc = '<a href="{}">{}</a> transfered {}'.format(url_for('userpage', id=entry['parameter']), useridtoobj(entry['parameter'])['name'], euro(entry['oldbalance']-entry['newbalance']))
+		else:
+			desc = '{} transfered {}'.format(useridtoobj(entry['parameter'])['name'], euro(entry['oldbalance']-entry['newbalance']))
+		if entry['reason']:
+			desc += ' reason: "{}"'.format(entry['reason'])
+
+	if html:
+		return '<a class="btn btn-default" href="{}"><span class="fa fa-undo"></span></a>{} {}'.format(undolink, entry['time'], desc)
+	else:
+		return '{} {}'.format(entry['time'], desc)
 
 def load_config_file():
 	config.from_pyfile('config.py', silent=True)
@@ -175,9 +255,17 @@ def register_navbar(name, iconlib='bootstrap', icon=None, visible=False):
 		return func
 	return wrapper
 
-def log_action(userid,old,new,method,parameter):
-	if useridtoobj(userid)['allow_logging']:
-		query('INSERT INTO "log" (user_id, method, oldbalance, newbalance, parameter) values (?, ?, ?, ?, ?)', userid, method, old, new, parameter)
+def log_action(userid, old, new, method, parameter, reason=None):
+	user = useridtoobj(userid)
+	if user['allow_logging']:
+		query('INSERT INTO "log" (user_id, method, oldbalance, newbalance, parameter, reason) values (?, ?, ?, ?, ?, ?)', userid, method, old, new, parameter, reason)
+	if user['transaction_mail']:
+		entry = { "user_id": userid, "method": method, "oldbalance": old, "newbalance": new, "parameter": parameter, "reason": reason, "time": datetime.datetime.now() }
+		msg = '{}\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'.format(logentrytotext(entry,user))
+		mail = 'To: {} <{}>\nFrom: M.U.K.A.S <noreply@aachen.ccc.de>\nSubject: M.U.K.A.S Transaction Notification\nContent-Type: text/plain; charset=utf-8\n\n{}'.format(user['name'],user['mail'],msg)
+		proc = subprocess.Popen(['sendmail', user['mail']], stdin=subprocess.PIPE)
+		proc.stdin.write(mail)
+		childprocess.append(proc)
 
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
 @app.route("/")

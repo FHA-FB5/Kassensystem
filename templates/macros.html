@@ -1,29 +1,7 @@
 {% macro loglist(entries, user) %}
 	<ul class="list-unstyled">
 	{% for i in entries %}
-		<li class="logentry">
-			<a class="btn btn-default" href="
-			{%- if i.method in ['transferTo', 'transferFrom'] %}
-			{{- url_for('api_user_transfer', sender=user.name, recipient=(i.parameter|useridtoobj).name, amount=(i.newbalance - i.oldbalance)/100, ref=request.url) -}}
-			{% else %}
-			{{- url_for('api_user_balance', name=user.name, newbalance=i.oldbalance, ref=request.url) -}}
-			{% endif -%}
-			"><span class="fa fa-undo"></span> </a>
-			{{i.time}} 
-			{% if i.method == "buy" %}
-			bought {{ (i.parameter|itemidtoobj).name }} for {{ (i.parameter|itemidtoobj)|itemprice|euro }}
-			{% elif i.method == "recharge" %}
-			recharged balance with {{ (i.parameter|itemidtoobj)|itemprice|abs|euro }}
-			{% elif i.method == "set_balance" %}
-			set balance from {{ i.oldbalance|euro }} to {{ i.newbalance|euro }}
-			{% elif i.method == "transferTo" %}
-			transfered {{ (i.oldbalance - i.newbalance)|euro }} to <a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a>{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
-			{% elif i.method == "transferFrom" %}
-			<a href="{{ url_for('userpage', id=i.parameter) }}">{{ (i.parameter|useridtoobj).name }}</a> transfered {{ (i.newbalance - i.oldbalance)|euro }}{% if i.reason %}, reason: "{{ i.reason }}"{% endif %}
-			{% else %}
-			something is broken ({{ i|pprint }})
-			{% endif %}
-		</li>
+		<li class="logentry">{{ logentrytotext(i, user)|safe }}</li></li>
 	{% endfor %}
 	</ul>
 {% endmacro %}

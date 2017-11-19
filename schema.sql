@@ -35,9 +35,10 @@ CREATE TABLE IF NOT EXISTS 'log' (
 	user_id 	integer,
 	time		timestamp default current_timestamp,
 	method		varchar(255),
-	oldbalance 	integer ,
+	oldbalance 	integer,
 	newbalance 	integer,
-	parameter	integer
+	parameter	integer,
+	reason		varchar(255)
 );
 CREATE TABLE IF NOT EXISTS 'barcode' (
 	id		varchar(255) primary key,
