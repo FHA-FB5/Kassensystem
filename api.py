@@ -54,7 +54,7 @@ def load_gravatar(mail):
 	print(url)
 	if res.status_code == 404:
 		return None
-	bytes_ = next(res.iter_content(chunk_size=1024**3))
+	bytes_ = next(res.iter_content(chunk_size=config['MAX_CONTENT_LENGTH']))
 	return bytes_
 
 @app.route("/api/user/<name>/edit", methods=['POST'])
