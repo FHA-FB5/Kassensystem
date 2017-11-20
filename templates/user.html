@@ -15,7 +15,7 @@
 		<script>
 			$("#userbalanceedit").click(
 				function () {
-					var rawinput = prompt("New balance:",{{ user.balance }}/100.0);
+					var rawinput = prompt("New balance:",$("#userbalance").text().replace("€",""));
 					if (rawinput != null) {
 						var newbalance = parseInt(parseFloat(rawinput.replace(',','.'))*100);
 						jQuery.ajax({
