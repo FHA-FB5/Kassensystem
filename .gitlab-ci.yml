@@ -3,4 +3,6 @@ job:
     - python3
     image: "python"
     stage: test
-    script: ./tests.py
+    script:
+    - - apt-get install -y python-flask python-pillow python-requests
+    - ./tests.py
