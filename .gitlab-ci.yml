@@ -9,7 +9,7 @@ unittest:
     stage: test
     script:
     - apt update
-    - apt install -y sqlite3 locales-all python3-flask python3-ldap3 python3-requests python3-pillow
+    - apt install -y sqlite3 locales-all python3-flask python3-ldap3 python3-requests python3-pillow python3-coverage
     - python3 -m coverage run tests.py
     - python3 -m coverage report --include "./*"
     - python3 -m coverage report -m  --include "./*" > report.txt
