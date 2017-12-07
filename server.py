@@ -25,6 +25,7 @@ config['SECRET_KEY'] = os.urandom(32)
 
 
 def load_config_file():
+    config.from_pyfile('config.py.example', silent=True)
 	config.from_pyfile('config.py', silent=True)
 	if config['DEBUG']:
 		app.jinja_env.auto_reload = True
