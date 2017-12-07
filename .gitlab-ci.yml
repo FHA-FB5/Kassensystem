@@ -1,6 +1,4 @@
 job:
-    tags:
-    - python3
     image: "python"
     stage: test
     script:
