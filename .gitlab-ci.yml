@@ -4,5 +4,5 @@ job:
     image: "python"
     stage: test
     script:
-    - apt-get install -y python-flask python-pillow python-requests
+    - apt install -y python3-flask python3-pillow python3-requests
     - ./tests.py
