@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
+	{% if isadmin() %}
 	<div class="col-xs-12 hidden-print">
 		<a class="btn btn-default" href="{{ url_for('itemlist', showdeleted={0: 1, 1:0}.get(request.values.get('showdeleted', 0))) }}">
 			{% if request.values.get('showdeleted', 0) %}
@@ -13,6 +14,7 @@
 			Add item
 		</a>
 	</div>
+	{% endif %}
 	{% for g in groups %}
 		<div class="col-xs-12">
 			<h3>{{ g.name }}</h3>
@@ -22,10 +24,14 @@
 						<th>#</th>
 						<th>Name</th>
 						<th>Price</th>
+						{% if isadmin() %}
 						<th class="hidden-print">Purchasing price</th>
 						<th class="hidden-print">Stock</th>
+						{% endif %}
 						<th>Info</th>
+						{% if isadmin() %}
 						<th class="hidden-print"></th>
+						{% endif %}
 					</tr>
 				</thead>
 				<tbody>
@@ -33,16 +39,20 @@
 					<tr id="itemrow_{{ i.id }}" {% if i.deleted %}style="background-color: #333;"{% endif %}>
 							<td>{{ i.id }}</td>
 							<td><img src="{{ url_for('get_img', imgid=i.picture_id) }}" class="itemlistimg" alt="product photo">  {{ i.name }}</td>
-							<td{% if not i.price %} style="background-color: grey;" title="calculated"{% endif %}>{{ i|itemprice|euro }}</td>
+							<td{% if not i.price and isadmin() %} style="background-color: grey;" title="calculated"{% endif %}>{{ i|itemprice|euro }}</td>
+							{% if isadmin() %}
 							<td class="hidden-print">{{ i.purchasingprice|euro }}</td>
 							<td class="hidden-print">{{ i|itemstock }}</td>
+							{% endif %}
 							<td>{{ i.info_public }}</td>
+							{% if isadmin() %}
 							<td class="hidden-print">
 								<ul class="pull-right list-inline">
 									<li><a class="btn btn-default btn-xs" href="{{ url_for('edititem', itemid=i.id) }}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></li>
 									<li><a class="btn btn-default btn-xs" href="{{ url_for('delitem', itemid=i.id, ref=url_for('itemlist', showdeleted=request.values.get('showdeleted', 0)) ) }}"><span class="glyphicon glyphicon-trash" {%if i.deleted %}style="color: red"{% endif %} aria-hidden="true"></span></a></li>
 								</ul>
 							</td>
+							{% endif %}
 						</tr>
 					{% endfor %}
 				</tbody>

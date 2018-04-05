@@ -256,14 +256,13 @@ def log_action(userid, old, new, method, parameter, reason=None):
 def index():
 	return render_template('index.html', allusers=query('SELECT * FROM user WHERE deleted=0'))
 
-@register_navbar('Items', icon='list', iconlib='fa')
+@register_navbar('Items', icon='list', iconlib='fa', visible=True)
 @app.route("/items")
-@admin_required
 def itemlist():
 	return render_template('itemlist.html',
 			groups=query('SELECT * FROM "group" ORDER BY sortorder '),
 			items=query('SELECT * FROM "item" WHERE deleted=0 or deleted=? ORDER BY name',
-				request.values.get('showdeleted', 0)))
+				request.values.get('showdeleted', 0) and isadmin()))
 
 @register_navbar('Groups', icon='object-group', iconlib='fa')
 @app.route("/groups")
