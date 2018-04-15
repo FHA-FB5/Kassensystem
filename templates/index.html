@@ -5,9 +5,11 @@
         var lastUsers = JSON.parse(localStorage.getItem("lastUsers"));
         if (lastUsers != undefined) {
             lastUsers.sort((a, b) => {
-                if (a.name < b.name) {
+                var an = a.name.toLowerCase();
+                var bn = b.name.toLowerCase();
+                if (an < bn) {
                     return -1;
-                } else if (a.name == b.name) {
+                } else if (an == bn) {
                     return 0;
                 } else {
                     return 1;
