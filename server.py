@@ -45,7 +45,7 @@ def date_json_handler(obj):
 	return obj.isoformat() if hasattr(obj, 'isoformat') else obj
 
 @app.template_global()
-def logentrytotext(inputentry, user, html=True):
+def logentrytotext(inputentry, user, html=True, short=False):
 	entry = {}
 	for i in inputentry:
 		if inputentry[i] is not None:
@@ -86,6 +86,8 @@ def logentrytotext(inputentry, user, html=True):
 
 	if html:
 		return '<a class="btn btn-default" href="{}"><span class="fa fa-undo"></span></a>{} {}'.format(undolink, entry['time'], desc)
+	elif short:
+		return desc
 	else:
 		return '{} {}'.format(entry['time'], desc)
 
@@ -241,10 +243,11 @@ def log_action(userid, old, new, method, parameter, reason=None):
 		query('INSERT INTO "log" (user_id, method, oldbalance, newbalance, parameter, reason) values (?, ?, ?, ?, ?, ?)', userid, method, old, new, parameter, reason)
 	if user['transaction_mail']:
 		entry = { "user_id": userid, "method": method, "oldbalance": old, "newbalance": new, "parameter": parameter, "reason": reason, "time": datetime.datetime.now() }
-		content = '{}\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'.format(logentrytotext(entry, user, html=False))
+		content = logentrytotext(entry, user, html=False)
+		content += '\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'
 		msg = EmailMessage()
 		msg.set_content(content)
-		msg['Subject'] = 'M.U.K.A.S Transaction Notification'
+		msg['Subject'] = '[MUKAS] ' + logentrytotext(entry, user, html=False, short=True)
 		msg['From'] = 'M.U.K.A.S <noreply@aachen.ccc.de>'
 		msg['To'] = "{} <{}>".format(user['name'],user['mail'])
 		s = smtplib.SMTP(config['SMTPSERVER'])
