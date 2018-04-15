@@ -1,4 +1,33 @@
 {% extends "base.html" %}
+{% block extra_headers %}
+<script>
+    $(document).ready(function() {
+        var lastUsers = JSON.parse(localStorage.getItem("lastUsers"));
+        if (lastUsers != undefined) {
+            lastUsers.sort((a, b) => {
+                if (a.name < b.name) {
+                    return -1;
+                } else if (a.name == b.name) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            });
+            lastUsers.forEach(user => {
+                $("#last_users").append(`
+                    <a class="col-xs-1 box" data-userid="${user.id}" href="/u/${user.id}">
+                        <div class="boximage" style="background-image: url('${user.imgUrl}');" ></div>
+                        <div class="boxspan">
+                            <span>${user.name}</span>
+                        </div>
+                    </a>
+                `);
+            });
+        }
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="row">
 	<div class="col-xs-12">
@@ -6,6 +35,9 @@
 			Add user
 		</button>
 	</div>
+
+    <div id="last_users" class="col-xs-12" style="padding: 0">
+    </div>
 
 	{% for u in allusers|sort(attribute='name') %}
 	<a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
