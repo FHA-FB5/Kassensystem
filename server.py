@@ -237,6 +237,7 @@ def register_navbar(name, iconlib='bootstrap', icon=None, visible=False):
 
 def log_action(userid, old, new, method, parameter, reason=None):
 	from email.message import EmailMessage
+	import email.utils
 	import smtplib
 
 	user = useridtoobj(userid)
@@ -248,6 +249,8 @@ def log_action(userid, old, new, method, parameter, reason=None):
 		content += '\nIf you notice any errors, please contact the admins <admins@aachen.ccc.de>.'
 		msg = EmailMessage()
 		msg.set_content(content)
+		msg["Message-ID"] = email.utils.make_msgid("mukas");
+		msg["Date"] = email.utils.localtime(datetime.now())
 		msg['Subject'] = '[MUKAS] ' + logentrytotext(entry, user, html=False, short=True)
 		msg['From'] = 'M.U.K.A.S <noreply@aachen.ccc.de>'
 		msg['To'] = "{} <{}>".format(user['name'],user['mail'])
