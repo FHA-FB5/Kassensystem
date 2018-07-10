@@ -2,14 +2,15 @@ PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 
 CREATE TABLE IF NOT EXISTS 'user' (
-	id		integer primary key autoincrement,
-	name		varchar(255) default 'user' unique,
-	picture_id	integer default NULL,
-	mail		varchar(255) default '',
-	balance		integer default 0,
-	deleted		boolean not null default 0 check (deleted IN (0,1)),
-	transaction_mail boolean not NULL default 0 CHECK (transaction_mail IN (0,1)),
-	allow_logging	boolean not NULL default 0 CHECK (allow_logging IN (0,1))
+	id			integer primary key autoincrement,
+	name			varchar(255) default 'user' unique,
+	picture_id		integer default NULL,
+	mail			varchar(255) default '',
+	balance			integer default 0,
+	deleted			boolean not null default 0 check (deleted IN (0,1)),
+	transaction_mail	boolean not NULL default 0 CHECK (transaction_mail IN (0,1)),
+	allow_logging		boolean not NULL default 0 CHECK (allow_logging IN (0,1)),
+	sort_by_buycount	boolean not NULL default 0 CHECK (allow_logging IN (0,1))
 );
 CREATE TABLE IF NOT EXISTS 'item' (
 	id		integer primary key autoincrement,

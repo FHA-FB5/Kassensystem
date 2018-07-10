@@ -23,8 +23,12 @@ def api_user_add():
 		args.append(True)
 	else:
 		args.append(False)
+	if request.values.get('sort_by_buycount', False):
+		args.append(True)
+	else:
+		args.append(False)
 	try:
-		query("INSERT INTO user (name, mail, transaction_mail, allow_logging) VALUES (?, ?, ?, ?)", *args)
+		query("INSERT INTO user (name, mail, transaction_mail, allow_logging, sort_by_buycount) VALUES (?, ?, ?, ?, ?)", *args)
 	except sqlite3.IntegrityError:
 		flash('Username already taken.')
 		return redirect(ref)
@@ -79,10 +83,14 @@ def api_user_edit(name):
 		args.append(True)
 	else:
 		args.append(False)
+	if request.values.get('sort_by_buycount', False):
+		args.append(True)
+	else:
+		args.append(False)
 	args.append(request.values.get('picture_id', -1, type=int))
 	args.append(name)
 
-	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ? WHERE name = ?", *args)
+	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ?, sort_by_buycount = ? WHERE name = ?", *args)
 	
 	if ref:
 		return redirect(ref)

@@ -66,6 +66,11 @@
 
 
 
+	{% if user.sort_by_buycount %}
+		{% set sorteditems = items|sort(attribute='name')|sort(attribute='buycount', reverse=True) %}
+	{% else %}
+		{% set sorteditems = items|sort(attribute='name') %}
+	{% endif %}
 	{% for g in groups %}
 	<div class="col-xs-12">
 		<div class="panel panel-default">
@@ -78,7 +83,7 @@
 			</div>
 			<div id="group_{{ g.id }}" class="panel-collapse collapse in">
 				<div class="panel-body row">
-					{% for i in items|sort(attribute='name') if i.group_id == g.id %}
+					{% for i in sorteditems if i.group_id == g.id %}
 					<a href="{{ url_for('api_user_buy', name=user.name, itemid=i.id, ref=url_for('userpage', name=user.name)+'#item_' + i.id|string) }}" id="item_{{i.id}}" class="box col-xs-1 buylink" data-itemid="{{ i.id }}" data-count="0" data-ajaxrunning="0" data-infotimeout="0" style="height: 180px;">
 						<div class="boximage" style="background-image: url('{{ url_for('get_img', imgid=i.picture_id) }}'); text-align: center;">
 							<!-- status --!>
@@ -178,6 +183,12 @@
 						<label class="form-check-label">
 							<input type="checkbox" name="allow_logging" class="form-check-input" {% if user.allow_logging != 0 %}checked{% endif %}>
 							Display a history of transactions so I can undo them
+						</label>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" name="sort_by_buycount" class="form-check-input" {% if user.sort_by_buycount != 0 %}checked{% endif %}>
+							Sort items by buycount, not alphabetically. Only possible if you enable logging
 						</label>
 					</div>
 				</div>
