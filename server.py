@@ -354,7 +354,6 @@ def userpage(name=None, id=None):
 	log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 50', user['name'])
 	groups=query('SELECT * FROM "group" ORDER BY sortorder ')
 	items=query('SELECT item.*, (SELECT count(log.id) FROM log WHERE user_id = ? AND method = "buy" AND parameter = item.id AND time > ?) as buycount FROM "item" WHERE deleted=0 ', user['id'], datetime.datetime.now() - datetime.timedelta(days=60))
-	print(items)
 	return render_template('user.html', user=user, log=log, groups=groups, items=items, users=users )
 
 @app.route("/login", methods=['GET', 'POST'])
