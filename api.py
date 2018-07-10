@@ -83,11 +83,11 @@ def api_user_edit(name):
 		args.append(True)
 	else:
 		args.append(False)
+	args.append(request.values.get('picture_id', -1, type=int))
 	if request.values.get('sort_by_buycount', False):
 		args.append(True)
 	else:
 		args.append(False)
-	args.append(request.values.get('picture_id', -1, type=int))
 	args.append(name)
 
 	query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ?, sort_by_buycount = ? WHERE name = ?", *args)
