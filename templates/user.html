@@ -2,27 +2,28 @@
 {% from 'macros.html' import loglist %}
 {% block title %}: {{ user.name }}{% endblock %}
 
-{% block extra_headers %}
-<script>
-    $(document).ready(function() {
-        /* Always keep a list of the 6 most recently visited user pages */
-        var lastUsers = JSON.parse(localStorage.getItem("lastUsers"));
-        if (lastUsers == undefined) {
-            lastUsers = [];
-        }
-        var userId = {{ user.id }};
-        lastUsers = lastUsers.filter(user => user.id != userId);
-        if (lastUsers.length >= 6) {
-            lastUsers = lastUsers.slice(lastUsers.length - 5, lastUsers.length);
-        }
-        lastUsers.push({
-            id: userId,
-            name: "{{ user.name }}",
-            imgUrl: "{{ url_for('get_img', imgid=user.picture_id) }}",
-        });
-        localStorage.setItem("lastUsers", JSON.stringify(lastUsers));
-    });
-</script>
+{% block header %}
+	{{ super() }}
+	<script>
+	    $(document).ready(function() {
+		/* Always keep a list of the 6 most recently visited user pages */
+		var lastUsers = JSON.parse(localStorage.getItem("lastUsers"));
+		if (lastUsers == undefined) {
+		    lastUsers = [];
+		}
+		var userId = {{ user.id }};
+		lastUsers = lastUsers.filter(user => user.id != userId);
+		if (lastUsers.length >= 6) {
+		    lastUsers = lastUsers.slice(lastUsers.length - 5, lastUsers.length);
+		}
+		lastUsers.push({
+		    id: userId,
+		    name: "{{ user.name }}",
+		    imgUrl: "{{ url_for('get_img', imgid=user.picture_id) }}",
+		});
+		localStorage.setItem("lastUsers", JSON.stringify(lastUsers));
+	    });
+	</script>
 {% endblock %}
 
 {% block content %}
