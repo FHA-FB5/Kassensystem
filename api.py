@@ -40,7 +40,6 @@ def api_user_add():
 			fp.write(img_data)
 			picture_id = import_image(fp)
 			if picture_id:
-				print(repr(picture_id))
 				query('UPDATE user SET picture_id = ? WHERE name = ?', picture_id, name)
 
 	if ref:
@@ -58,7 +57,6 @@ def load_gravatar(mail):
 	mailhash = hashlib.md5(mail.encode()).hexdigest()
 	url = 'https://www.gravatar.com/avatar/{}?s=200&d=404'.format(mailhash)
 	res = requests.get(url)
-	print(url)
 	if res.status_code == 404:
 		return None
 	bytes_ = next(res.iter_content(chunk_size=config['MAX_CONTENT_LENGTH']))
