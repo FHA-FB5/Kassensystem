@@ -1,34 +1,35 @@
 {% extends "base.html" %}
-{% block extra_headers %}
-<script>
-    $(document).ready(function() {
-        var lastUsers = JSON.parse(localStorage.getItem("lastUsers"));
-        if (lastUsers != undefined) {
-            lastUsers.sort((a, b) => {
-                var an = a.name.toLowerCase();
-                var bn = b.name.toLowerCase();
-                if (an < bn) {
-                    return -1;
-                } else if (an == bn) {
-                    return 0;
-                } else {
-                    return 1;
-                }
-            });
-            lastUsers.forEach(user => {
-                $("#last_users").append(`
-                    <a class="col-xs-1 box" data-userid="${user.id}" href="/u/${user.id}">
-                        <div class="boximage" style="background-image: url('${user.imgUrl}');" ></div>
-                        <div class="boxspan">
-                            <span>${user.name}</span>
-                        </div>
-                    </a>
-                `);
-            });
-            $("#last_users").css("border-bottom", ".3em solid hsl(222, 71%, 30%)");
-        }
-    });
-</script>
+{% block header %}
+	{{ super() }}
+	<script>
+	    $(document).ready(function() {
+		var lastUsers = JSON.parse(localStorage.getItem("lastUsers"));
+		if (lastUsers != undefined) {
+		    lastUsers.sort((a, b) => {
+			var an = a.name.toLowerCase();
+			var bn = b.name.toLowerCase();
+			if (an < bn) {
+			    return -1;
+			} else if (an == bn) {
+			    return 0;
+			} else {
+			    return 1;
+			}
+		    });
+		    lastUsers.forEach(user => {
+			$("#last_users").append(`
+			    <a class="col-xs-1 box" data-userid="${user.id}" href="/u/${user.id}">
+				<div class="boximage" style="background-image: url('${user.imgUrl}');" ></div>
+				<div class="boxspan">
+				    <span>${user.name}</span>
+				</div>
+			    </a>
+			`);
+		    });
+		    $("#last_users").css("border-bottom", ".3em solid hsl(222, 71%, 30%)");
+		}
+	    });
+	</script>
 {% endblock %}
 
 {% block content %}
