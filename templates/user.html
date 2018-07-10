@@ -42,7 +42,7 @@
 				function () {
 					var rawinput = prompt("New balance:",$("#userbalance").text().replace("€",""));
 					if (rawinput != null) {
-						var newbalance = parseInt(parseFloat(rawinput.replace(',','.'))*100);
+						var newbalance = Math.round(parseFloat(rawinput.replace(',','.'))*100);
 						jQuery.ajax({
 							method: "POST",
 							dataType: "text",

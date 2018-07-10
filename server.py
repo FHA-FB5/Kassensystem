@@ -285,9 +285,9 @@ def edititem(itemid):
 		args = []
 		args.append(request.values.get('name', 'FIXME'))
 		args.append(request.values.get('group_id', -1))
-		args.append(int(float(request.values.get('purchasingprice', 0))*100))
+		args.append(round(float(request.values.get('purchasingprice', 0))*100))
 		if not request.values.get('usecalculated', False):
-			args.append(int(float(request.values.get('price', 0))*100))
+			args.append(round(float(request.values.get('price', 0))*100))
 		else:
 			args.append(None)
 		args.append(request.values.get('info_public', ''))
