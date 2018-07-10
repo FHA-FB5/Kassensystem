@@ -35,23 +35,39 @@
 		<div>
 			<span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
 			<button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
+			<button id="userbalanceeditrelativ" class="btn btn-default" >+/-</button>
 			<button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
 		</div>
 		<script>
+			var changebalancecall = function(value) {
+				jQuery.ajax({
+					method: "POST",
+					dataType: "text",
+					data: { 'newbalance': value },
+					url: "{{ url_for('api_user_balance', name=user.name) }}",
+					success: function (data) {
+						window.location = "{{ url_for('userpage', name=user.name) }}"
+					}
+				});
+			}
 			$("#userbalanceedit").click(
 				function () {
 					var rawinput = prompt("New balance:",$("#userbalance").text().replace("€",""));
 					if (rawinput != null) {
 						var newbalance = Math.round(parseFloat(rawinput.replace(',','.'))*100);
-						jQuery.ajax({
-							method: "POST",
-							dataType: "text",
-							data: { 'newbalance': newbalance },
-							url: "{{ url_for('api_user_balance', name=user.name) }}",
-							success: function (data) {
-								window.location = "{{ url_for('userpage', name=user.name) }}"
-							}
-						});
+						changebalancecall(newbalance)
+					}
+
+				}
+			);
+			$("#userbalanceeditrelativ").click(
+				function () {
+					var rawinput = prompt("Relative change of balance (use a '-' as prefix for a decrease, use '+' or nothing as prefix for an increase:", "0.00");
+					if (rawinput != null) {
+						var oldbalance = Math.round(parseFloat($("#userbalance").text().replace("€",""))*100)
+						var relativechange = Math.round(parseFloat(rawinput.replace(',','.'))*100)
+						var newbalance = oldbalance + relativechange;
+						changebalancecall(newbalance)
 					}
 
 				}
