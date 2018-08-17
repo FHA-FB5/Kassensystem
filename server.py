@@ -375,7 +375,7 @@ def login():
 
 
 def valid_credentials(user, pw):
-    return user == "admin" and pw == "admin"
+    return user == config['ADMIN_USR'] and pw == config['ADMIN_PWD']
 
 @app.route("/logout")
 def logout():
