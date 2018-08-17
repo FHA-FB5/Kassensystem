@@ -17,3 +17,5 @@ bash:
 fish:
 	$(shell . ${PWD}/bin/active.fish)
 
+vrun:
+	$(shell python run.py)
