@@ -2,20 +2,19 @@ INFO=
 
 all:
 	@echo "cmd:"
-	@echo "  venv     setup python virtual-env"
-	@echo "  ureq     update requirements"
-	@echo "  bash     join env with bash"
-	@echo "  fish     join env with fish"
-	@echo "  vrun     run app"
+	@echo "  install    creates a virtual pyenv and"
+	@echo "             installs all necessary dependencies."
+	@echo "  run        starts the app in a pyenv"
 
-venv:
-	$(shell python3 -m venv .)
+install:
+	( \
+	python3 -m venv .; \
+	source ${PWD}/bin/activate; \
+	pip install -r req.txt; \
+	)
 
-bash:
-	$(shell . ${PWD}/bin/active)
-
-fish:
-	$(shell . ${PWD}/bin/active.fish)
-
-vrun:
-	$(shell python run.py)
+run:
+	( \
+	. ${PWD}/bin/activate; \
+	python3 run.py; \
+	)
