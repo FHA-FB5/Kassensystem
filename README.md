@@ -1,4 +1,7 @@
 # General
+
+[Forked from cccac](https://gitlab.aachen.ccc.de/mukas/mukas)
+
 This cash system is a simple log of stock withdrawal. Each user is given
 their own user account, which is managed on a trust basis. The admin of the
 system can add users individually and assign them an avatar.
