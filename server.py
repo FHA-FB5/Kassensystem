@@ -428,8 +428,9 @@ def settings(**kwargs):
                 stud = students[int(v)]
                 try:
                     newId = api.import_image(stud['image_path'])
-                    query("INSERT OR REPLACE INTO user (name, picture_id) VALUES (?, ?)",
-                          stud['name'], newId)
+                    query("INSERT OR REPLACE INTO user (name, picture_id," +
+                    "allow_logging) VALUES (?, ?, ?)",
+                          stud['name'], newId, True)
                 except sqlite3.IntegrityError:
                     flash('Username already taken.')
         return redirect("/")

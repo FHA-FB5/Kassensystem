@@ -58,16 +58,14 @@ a.box, h1 a {
 }
 
 #userbalance {
-    border-radius: 1em;
     margin: 0.1em;
     padding: 0.5em 0.8em;
-    display: inline-block;
     font-size: 2em;
     font-weight: 999;
+    display: block;
 }
 #userbalance[data-level="bad"] {
-    background-color: #FF282D;
-    color: black;
+    color: white;
 }
 #userbalance[data-level="negative"] {
     color: #FF484D;
@@ -76,8 +74,7 @@ a.box, h1 a {
     color: #0DAF07;
 }
 #userbalance[data-level="great"] {
-    background-color: #0D8F07;
-    color: black;
+    color: white;
 }
 
 .panel-default > .panel-heading {

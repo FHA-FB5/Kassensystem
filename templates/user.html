@@ -32,12 +32,13 @@
     </div>
     <div class="col-xs-12 col-sm-7" style="margin-bottom: 20px">
         <div style="margin-bottom: 40px"><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3>
-          {% if isadmin() %}
-            <button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button>
-            <button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
-            <button id="userbalanceeditrelativ" class="btn btn-default" >+/-</button>
-            <button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
-          {% endif %}
+            {% if isadmin() %}
+              <button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button>
+              <button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
+              <button id="userbalanceeditrelativ" class="btn btn-default" >+/-</button>
+              <button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
+            {% endif %}
+          <span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
         </div>
         <script>
          var changebalancecall = function(value) {
@@ -185,11 +186,13 @@
 </div>
 
 <div id="row">
-    <div>
-        <h4 id="userlog">log:</h4>
-    </div>
-    <div id="userlogdiv" style="overflow-y: scroll; max-height: 18em;">
-        {{ loglist(log, user) }}
+    <div class="col-xs-12">
+      <div>
+          <h4 id="userlog">log:</h4>
+      </div>
+      <div id="userlogdiv" style="overflow-y: scroll; max-height: 18em;">
+          {{ loglist(log, user) }}
+      </div>
     </div>
 </div>
 
