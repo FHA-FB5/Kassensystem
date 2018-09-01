@@ -1,11 +1,5 @@
 {% extends "base.html" %}
 {% block header %}
-<link rel="stylesheet" type="text/css"
-      href={{ url_for('static', filename='init.css') }}>
-{{ super() }}
-<script>
- $(document).ready(function() { });
-</script>
 {% endblock %}
 
 {% block content %}
