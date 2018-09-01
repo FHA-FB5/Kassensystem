@@ -22,7 +22,9 @@
             imgUrl: "{{ url_for('get_img', imgid=user.picture_id) }}",
         });
             localStorage.setItem("lastUsers", JSON.stringify(lastUsers));
-        setTimeout(function() { window.location= "{{ url_for('index') }}"; }, 60000);
+        {% if not isadmin() %}
+            setTimeout(function() { window.location= "{{ url_for('index') }}"; }, 60000);
+        {% endif %}
         });
     </script>
 {% endblock %}
