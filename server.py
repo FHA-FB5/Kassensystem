@@ -1,4 +1,4 @@
-from flask import Flask, render_template, render_template_string, g, session, Response, redirect, request, url_for, flash, escape
+from flask import Flask, render_template, jsonify, render_template_string, g, session, Response, redirect, request, url_for, flash, escape
 from functools import wraps
 import sqlite3
 import hashlib
@@ -6,6 +6,8 @@ import locale
 import random
 import string
 import os
+from os.path import join, abspath, dirname
+from os import listdir
 import datetime
 from PIL import Image
 import io
@@ -13,8 +15,13 @@ import traceback
 import json
 import queue
 import datetime
+import pprint
+from typing import List
 
 locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
+
+ROOT_DIR = dirname(abspath(__file__))
+STATIC_DIR = join(ROOT_DIR, 'static')
 
 app = Flask(__name__)
 
@@ -23,6 +30,16 @@ app.jinja_env.lstrip_blocks = True
 
 config = app.config
 config['SECRET_KEY'] = os.urandom(32)
+
+
+class Student:
+
+    def __init__(self, student_id: int, name: str,
+                 major: str, image_path: str):
+        self.id = student_id
+        self.name = name
+        self.major = major
+        self.image_path = image_path
 
 
 def load_config_file():
@@ -373,9 +390,9 @@ def login():
     return redirect(request.values.get('ref', url_for('index')))
 
 
-
 def valid_credentials(user, pw):
     return user == config['ADMIN_USR'] and pw == config['ADMIN_PWD']
+
 
 @app.route("/logout")
 def logout():
@@ -384,4 +401,36 @@ def logout():
     session.pop('loggedin', None)
     return redirect(request.values.get('ref', url_for('index')))
 
+
+def getStudents():
+    """
+    Image file names are expected to have the form
+    <name> "_" [<name> "_"]* <major> "."studentspf <suffix>
+    """
+    images: List[str] = listdir(join(STATIC_DIR, 'students'))
+    students = list()
+    for index, image in enumerate(images):
+        *name, major = image.split('.')[0].split('_')
+        student = Student(index, ' '.join(name),
+                          major, f'static/students/{image}')
+        students.append(student.__dict__)
+    return students
+
 import api
+
+@app.route("/settings", methods=['GET', 'POST'])
+@admin_required
+def settings(**kwargs):
+    students = getStudents()
+    if request.method == 'POST':
+        for v in request.form:
+            if v.isnumeric() and request.form.get(v):
+                stud = students[int(v)]
+                try:
+                    newId = api.import_image(stud['image_path'])
+                    query("INSERT OR REPLACE INTO user (name, picture_id) VALUES (?, ?)",
+                          stud['name'], newId)
+                except sqlite3.IntegrityError:
+                    flash('Username already taken.')
+        return redirect("/")
+    return render_template('settings.html', tstudents=students, **kwargs)

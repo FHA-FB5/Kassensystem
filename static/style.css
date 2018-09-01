@@ -1,104 +1,124 @@
 body {
-	background-color: #01050f;
-	color: #edebec;
-	font-family: Helvetica, sans-serif;
+    background-color: #01050f;
+    color: #edebec;
+    font-family: Helvetica, sans-serif;
 }
 
 
 .box {
-	border-radius: 15px;
-	background-color: #0b1b40;
-	box-shadow: 0px 0px 10px 0px black;
-	padding: 10px;
-	margin: 7px;
-	width: 140px;
-	height: auto;
-	display: flex;
-	align-items: center;
-	flex-direction: column;
+    border-radius: 15px;
+    background-color: #0b1b40;
+    box-shadow: 0px 0px 10px 0px black;
+    padding: 10px;
+    margin: 7px;
+    width: 140px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
 }
 
 a.box, h1 a {
-	text-decoration: none;
-	color: inherit;
+    text-decoration: none;
+    color: inherit;
 }
 
 .boximage {
-	background-repeat: no-repeat;
-	background-size: contain;
-	background-position: center;
-	width: 100%;
-	height: 100px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    width: 100%;
+    height: 100px;
 }
 
 .userimg .boximage {
-	width: 200px;
-	height: 200px;
+    width: 200px;
+    height: 200px;
 }
 
 .userimg {
-	margin: 20px;
-	min-width: 200px;
-	min-height: 200px;
+    margin: 20px;
+    min-width: 200px;
+    min-height: 200px;
 }
 
 .box span {
-	text-align: center;
+    text-align: center;
 }
 
 .boxspan {
-	display: flex;
-	align-items: center;
-	flex-direction: column;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
 }
 
 #userimg .boximage {
-	width: 200px;
-	height: 200px;
+    width: 200px;
+    height: 200px;
 }
 
 #userbalance {
-	border-radius: 1em;
-	margin: 0.1em;
-	padding: 0.5em 0.8em;
-	display: inline-block;
+    border-radius: 1em;
+    margin: 0.1em;
+    padding: 0.5em 0.8em;
+    display: inline-block;
 }
 #userbalance[data-level="bad"] {
-	background-color: #FF282D;
-	color: black;
+    background-color: #FF282D;
+    color: black;
 }
 #userbalance[data-level="negative"] {
-	color: #FF484D;
+    color: #FF484D;
 }
 #userbalance[data-level="positive"] {
-	color: #0DAF07;
+    color: #0DAF07;
 }
 #userbalance[data-level="great"] {
-	background-color: #0D8F07;
-	color: black;
+    background-color: #0D8F07;
+    color: black;
 }
 
 .panel-default > .panel-heading {
-	background-color: #333;
-	border-color: #222;
+    background-color: #333;
+    border-color: #222;
 }
 .panel-title {
-	color: #edebec;
+    color: #edebec;
 }
 
 .panel-default {
-	background-color: #01050f;
-	border-color: #444;
+    background-color: #01050f;
+    border-color: #444;
 }
 
 .btn {
-	background-color: #444;
-	color: white;
-	border-color: #222;
+    background-color: #444;
+    color: white;
+    border-color: #222;
 }
 
 .itemlistimg {
-	height: 1em;
-	width: auto;
-	background-color: #0b1b40;
+    height: 1em;
+    width: auto;
+    background-color: #0b1b40;
+}
+
+div#outwrapper
+{
+    width: 230px;
+    height: auto;
+    margin: auto;
+}
+
+input.check
+{
+    float: right;
+}
+
+div#namewrapper
+{
+    width: auto;
+    height: 25px;
+    text-align: left;
+    margin: 5px;
 }

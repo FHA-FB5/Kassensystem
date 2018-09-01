@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block header %}
+<link rel="stylesheet" type="text/css"
+      href={{ url_for('static', filename='init.css') }}>
+{{ super() }}
+<script>
+ $(document).ready(function() { });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div id="outwrapper">
+      <form method="post" action="">
+        <input type="submit" class ="btn" value="Importieren">
+        {% for student in tstudents %}
+        <div id="namewrapper">
+            {{ student.name }}
+            <input class="check" name="{{ student.id }}"
+                   type="checkbox" checked="">
+        </div>
+        {% endfor %}
+      </form>
+    </div>
+</div>
+{% endblock %}
