@@ -21,7 +21,8 @@
             name: "{{ user.name }}",
             imgUrl: "{{ url_for('get_img', imgid=user.picture_id) }}",
         });
-        localStorage.setItem("lastUsers", JSON.stringify(lastUsers));
+            localStorage.setItem("lastUsers", JSON.stringify(lastUsers));
+        setTimeout(function() { window.location= "{{ url_for('index') }}"; }, 60000);
         });
     </script>
 {% endblock %}
@@ -38,7 +39,25 @@
               <button id="userbalanceeditrelativ" class="btn btn-default" >+/-</button>
               <button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
             {% endif %}
-          <span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
+
+            <div class="row">
+              <div class="col-xs-4" >
+                <span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance >= 0) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
+              </div>
+              <div class="col-xs-8">
+                <details>
+                    <summary>
+                        <button class="btn">
+                            Show log
+                        </button>
+                    </summary>
+
+                    <div id="userlogdiv" style="overflow-y: scroll; max-height: 150px;">
+                      {{ loglist(log, user) }}
+                    </div>
+                </details>
+              </div>
+            </div>
         </div>
         <script>
          var changebalancecall = function(value) {
@@ -182,17 +201,6 @@
                 <iframe onload="resizeIframe(this)" src="{{ url_for('api_img_add', imgid=user.picture_id|d(-1)) }}" style="border: none; width: 100%; height: 100%; min-height: 600px;"></iframe>
             </div>
         </div>
-    </div>
-</div>
-
-<div id="row">
-    <div class="col-xs-12">
-      <div>
-          <h4 id="userlog">log:</h4>
-      </div>
-      <div id="userlogdiv" style="overflow-y: scroll; max-height: 18em;">
-          {{ loglist(log, user) }}
-      </div>
     </div>
 </div>
 
