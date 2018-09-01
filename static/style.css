@@ -62,6 +62,8 @@ a.box, h1 a {
     margin: 0.1em;
     padding: 0.5em 0.8em;
     display: inline-block;
+    font-size: 2em;
+    font-weight: 999;
 }
 #userbalance[data-level="bad"] {
     background-color: #FF282D;
