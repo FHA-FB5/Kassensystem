@@ -34,27 +34,47 @@
         <div style="margin-bottom: 40px"><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3>
           {% if isadmin() %}
             <button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button>
-         {% endif %}
-        </div>
-        <div>
-            <span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance < 2000) %}positive{% else %}great{% endif %}">Konto: {{ user.balance|euro }}</span>
+            <button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
+            <button id="userbalanceeditrelativ" class="btn btn-default" >+/-</button>
+            <button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
+          {% endif %}
         </div>
         <script>
-            var changebalancecall = function(value) {
-                jQuery.ajax({
-                    method: "POST",
-                    dataType: "text",
-                    data: { 'newbalance': value },
-                    url: "{{ url_for('api_user_balance', name=user.name) }}",
-                    success: function (data) {
-                        window.location = "{{ url_for('userpage', name=user.name) }}"
-                    }
-                });
-            }
+         var changebalancecall = function(value) {
+             jQuery.ajax({
+                 method: "POST",
+                 dataType: "text",
+                 data: { 'newbalance': value },
+                 url: "{{ url_for('api_user_balance', name=user.name) }}",
+                 success: function (data) {
+                     window.location = "{{ url_for('userpage', name=user.name) }}"
+                 }
+             });
+         }
+         $("#userbalanceedit").click(
+             function () {
+                 var rawinput = prompt("New balance:",$("#userbalance").text().replace("€",""));
+                 if (rawinput != null) {
+                     var newbalance = Math.round(parseFloat(rawinput.replace(',','.'))*100);
+                     changebalancecall(newbalance)
+                 }
+
+             }
+         );
+         $("#userbalanceeditrelativ").click(
+             function () {
+                 var rawinput = prompt("Relative change of balance (use a '-' as prefix for a decrease, use '+' or nothing as prefix for an increase:", "0.00");
+                 if (rawinput != null) {
+                     var oldbalance = Math.round(parseFloat($("#userbalance").text().replace("€",""))*100)
+                     var relativechange = Math.round(parseFloat(rawinput.replace(',','.'))*100)
+                     var newbalance = oldbalance + relativechange;
+                     changebalancecall(newbalance)
+                 }
+
+             }
+         );
         </script>
     </div>
-
-
 
     {% if user.sort_by_buycount %}
         {% set sorteditems = items|sort(attribute='name')|sort(attribute='buycount', reverse=True) %}
@@ -90,48 +110,7 @@
     </div>
     {% endfor %}
 
-<div class="modal fade" id="transfermodal" tabindex="-1" role="dialog">
-    <form method="POST" action="{{ url_for('api_user_transfer', sender=user.name, ref=url_for('userpage', id=user.id)) }}">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content" style="background-color: #222">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title">Transfer money to user</h4>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-
-                    </div>
-
-                    <div class="form-group">
-                        <label for="transferusername">Recipient</label>
-                        <input name="recipient" list="users" id="transferusername" type="text" class="form-control">
-                        <datalist id="users">
-                            {% for u in users if u.deleted==0 %}
-                            <option>{{ u.name }}</option>
-                            {% endfor %}
-                        </datalist>
-                    </div>
-                    <div class="form-group">
-                        <label for="transferamount">Amount (€)</label>
-                        <input name="amount" id="transferamount" type="number" step="0.01" class="form-control" value="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label for="transferreason">Reason</label>
-                        <input name="reason" id="transferreason" type="text" class="form-control">
-                        <small class="form-text text-muted">A reason for the transfer, optional.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Transfer</button>
-                </div>
-            </div>
-        </div>
-    </form>
-</div>
-
-
+{% if isadmin() %}
 <div class="modal fade" id="usersettingsmodal" tabindex="-1" role="dialog">
     <form method="POST" action="{{ url_for('api_user_edit', name=user.name, ref=url_for('userpage', id=user.id)) }}">
         <div class="modal-dialog" role="document">
@@ -190,6 +169,7 @@
         </div>
     </form>
 </div>
+{% endif %}
 <div class="modal fade" id="pictureselect" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content" style="background-color: #222">
@@ -201,6 +181,15 @@
                 <iframe onload="resizeIframe(this)" src="{{ url_for('api_img_add', imgid=user.picture_id|d(-1)) }}" style="border: none; width: 100%; height: 100%; min-height: 600px;"></iframe>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="row">
+    <div>
+        <h4 id="userlog">log:</h4>
+    </div>
+    <div id="userlogdiv" style="overflow-y: scroll; max-height: 18em;">
+        {{ loglist(log, user) }}
     </div>
 </div>
 
