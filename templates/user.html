@@ -32,12 +32,12 @@
         <div class="boximage" style="{% if user.picture_id %}background-image: url('{{ url_for('get_img', imgid=user.picture_id) }}');{% endif %}" ></div>
     </div>
     <div class="col-xs-12 col-sm-7" style="margin-bottom: 20px">
-        <div style="margin-bottom: 40px"><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3>
+        <div><h3 style="display: inline; margin-right: 20px;">{{ user.name }}</h3>
             {% if isadmin() %}
               <button class="btn btn-default" data-toggle="modal" data-target="#usersettingsmodal">User settings</button>
-              <button id="userbalanceedit" class="btn btn-default" style="margin-left: 10px;">Edit</button>
+              <button id="userbalanceedit" class="btn btn-default">Edit</button>
               <button id="userbalanceeditrelativ" class="btn btn-default" >+/-</button>
-              <button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer to user</button>
+              <button id="usertransfer" class="btn btn-default" data-toggle="modal" data-target="#transfermodal">Transfer</button>
             {% endif %}
 
             <div class="row">
