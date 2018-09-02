@@ -17,7 +17,7 @@
   <a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
     <div class="boximage" style="{% if u.picture_id %}background-image: url('{{ url_for('get_img', imgid=u.picture_id) }}');{% endif %}" ></div>
     <div class="boxspan">
-      <span>{{ u.name }}</span>
+      <span style="font-weight: 900; margin-top: 5px;">{{ u.name }}</span>
     </div>
   </a>
   {% endfor %}
