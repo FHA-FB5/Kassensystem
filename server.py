@@ -423,15 +423,13 @@ import api
 def settings(**kwargs):
     students = getStudents()
     if request.method == 'POST':
+        query("DELETE FROM pictures")
         for v in request.form:
             if v.isnumeric() and request.form.get(v):
                 stud = students[int(v)]
-                try:
-                    newId = api.import_image(stud['image_path'])
-                    query("INSERT OR REPLACE INTO user (name, picture_id," +
-                    "allow_logging) VALUES (?, ?, ?)",
-                          stud['name'], newId, True)
-                except sqlite3.IntegrityError:
-                    flash('Username already taken.')
+                newId = api.import_image(stud['image_path'])
+                query("INSERT OR REPLACE INTO user (name, picture_id," +
+                      "allow_logging) VALUES (?, ?, ?)",
+                      stud['name'], newId, True)
         return redirect("/")
     return render_template('settings.html', tstudents=students, **kwargs)

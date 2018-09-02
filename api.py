@@ -89,7 +89,7 @@ def api_user_edit(name):
     args.append(name)
 
     query("UPDATE user SET name = ?, mail = ?, transaction_mail = ?, allow_logging = ?, picture_id = ?, sort_by_buycount = ? WHERE name = ?", *args)
-    
+
     if ref:
         return redirect(ref)
     else:
@@ -121,13 +121,13 @@ def api_user_transfer(sender):
 
     amount = int(float(request.values.get('amount', 0))*100)
     reason = request.values.get('reason')
-    
+
     query('UPDATE user SET balance = balance - ? WHERE id = ?', amount, sender['id'])
     log_action(sender['id'], sender['balance'], sender['balance'] - amount, 'transferTo', recipient['id'], reason)
 
     query('UPDATE user SET balance = balance + ? WHERE id = ?', amount, recipient['id'])
     log_action(recipient['id'], recipient['balance'], recipient['balance'] + amount, 'transferFrom', sender['id'], reason)
-    
+
     if ref:
         return redirect(ref)
     else:
