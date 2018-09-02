@@ -2,122 +2,122 @@
 
 <!DOCTYPE html>
 <html lang="en-GB">
-	<head>
-		{% block header %}
-		<meta charset="UTF-8">
-		<title>MUKAS - CCCAC{% block title %}{% for endpoint, caption, iconlib, gly, visible in navbar if ((visible or isadmin()) and (endpoint == request.endpoint)) %}- {{ caption }}{% else%}{% endfor %}{% endblock %}
-		</title>
-		
-		<script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename='spin.js') }}"></script>
-		<link href="{{url_for('static', filename='bootstrap/bootstrap.css')}}" rel="stylesheet">
-		<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap.js') }}"></script>
-		<link rel="stylesheet" href="{{url_for('static', filename='font-awesome/css/font-awesome.css')}}">
-		<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css') }}">
-		
-		<meta http-equiv="refresh" content="3600">
+    <head>
+        {% block header %}
+        <meta charset="UTF-8">
+        <title>Kiosk2000{% block title %}{% for endpoint, caption, iconlib, gly, visible in navbar if ((visible or isadmin()) and (endpoint == request.endpoint)) %}- {{ caption }}{% else %}{% endfor %}{% endblock %}
+        </title>
 
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<link rel="icon" type="image/png" href="{{url_for('static', filename='favicon.png')}}">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
+        <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
+        <script type="text/javascript" src="{{ url_for('static', filename='spin.js') }}"></script>
+        <link href="{{url_for('static', filename='bootstrap/bootstrap.css')}}" rel="stylesheet">
+        <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/bootstrap.js') }}"></script>
+        <link rel="stylesheet" href="{{url_for('static', filename='font-awesome/css/font-awesome.css')}}">
+        <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css') }}">
 
-		{% endblock %}
-	</head>
-	<body>
-	{% block navbar %}
-		<nav class="hidden-print navbar navbar-default Add .navbar-fixed-top navbar-inverse">
-			<div class="container-fluid">
-				<div class="navbar-header">
-					<button type="button" class="navbar-toggle" data-toggle="collapse" 
-						 data-target=".navbar-collapse">
-						<span class="sr-only">Toggle navigation</span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</button>
-					<a class="navbar-brand" href="/" style="padding: 2px;" title="Mate- und Krams-Abrechnungs-System">
-						<ul class="list-inline">
-							<li><img alt="" src="{{url_for('static', filename='logo.png')}}" style="height: 40px; margin: 4px;" ></li>
-							<li>CCCAC - M.U.K.A.S</li>
-						</ul>
-					</a>
-				</div>
-				<div class="collapse navbar-collapse">
-					<ul class="nav nav-pills" style="margin-top: 5px;">
-						{% for endpoint, caption, iconlib, gly, visible in navbar if visible or isadmin() %}
-							<li{% if endpoint == request.endpoint %} class="active"{% endif %}>
-								<a href="{{ url_for(endpoint) }}">
-									{% if gly != '' %}
-										{% if iconlib == 'bootstrap' %}
-											<span aria-hidden="true" class="glyphicon glyphicon-{{ gly }}"></span> 
-										{% elif iconlib == 'fa' %}
-											<span aria-hidden="true" class="fa fa-{{ gly }}"></span> 
-										{% endif %}
-									{{ caption }}
-									{% endif %}
-								</a>
-							</li>
-						{% endfor %}
+        <meta http-equiv="refresh" content="3600">
 
-						<li class="navbar-right">
-							{% if not isadmin() %}
-							<a href="{{url_for('login', ref=request.url)}}" id="loginpopover" data-container="body" data-toggle="popover" data-placement="bottom"> 
-								<span class="glyphicon glyphicon-log-in"></span>
-								Admin area
-							</a>
-							<script>
-								$('#loginpopover').on('click',function(e){
-									e.preventDefault();
-								}).popover(
-										{
-											html:true,
-											title:'Login',
-											content:'<form method="post" action="{{url_for('login', ref=request.values.get('ref', request.url))}}"><input autofocus placeholder="User" name="user" type="text" class="form-control"><input placeholder="Password" name="password" type="password" class="form-control"><br><input type="submit" value="Login" class="btn btn-default"></form>'
-										}
-										)
-							</script>
-							{% else %}
-							<a href="{{url_for('logout', ref=request.url)}}">
-								{{ session.user }}
-								<span class="glyphicon glyphicon-log-out"></span>
-							</a>
-							{% endif %}
-						</li>
-					</ul>	
-				</div>
-			</div>
-		</nav>
-		{% endblock %}
-		<div class="container-fluid" style="margin-bottom: 30px;">
-			<div class="row">
-				{% if page_border == 0 %}
-				<div class="col-xs-12">
-				{% else %}
-				<div class="col-xs-12 col-md-offset-{{ page_border }} col-md-{{ 12-(2*page_border) }}">
-				{% endif %}
-					{% block alerts %}
-					{% for msg in get_flashed_messages(category_filter=["message"]) %}
-					<div class="hidden-print alert alert-danger" role="alert">{{ msg|safe }}</div>
-					{% endfor %}
-					{% endblock %}
-					{% block content %}
-					{% endblock %}
-				</div>
-			</div>
-		</div>
-		{% block footer %}
-		<footer class="footer hidden-print">
-			<div class="container-fluid">
-				<ul class="list-inline" style="margin-top: 5px;">
-					<li>
-						<a href="https://ccc.ac/">CCCAC</a>
-					</li>
-					<li>
-						<a href="https://gitlab.aachen.ccc.de/mukas/mukas">Sourcecode</a>
-					</li>
-				</ul>
-			</div>
-		</footer>
-		{% endblock %}
-	</body>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="icon" type="image/png" href="{{url_for('static', filename='favicon.png')}}">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        {% endblock %}
+    </head>
+    <body>
+    {% block navbar %}
+        <nav class="hidden-print navbar navbar-default Add .navbar-fixed-top navbar-inverse">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse"
+                         data-target=".navbar-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="/" style="padding: 2px;" title="Mate- und Krams-Abrechnungs-System">
+                        <ul class="list-inline">
+                            <li><img alt="" src="{{url_for('static', filename='logo.png')}}" style="height: 40px; margin: 4px;" ></li>
+                            <li>Kiosk2000</li>
+                        </ul>
+                    </a>
+                </div>
+                <div class="collapse navbar-collapse">
+                    <ul class="nav nav-pills" style="margin-top: 5px;">
+                        {% for endpoint, caption, iconlib, gly, visible in navbar if visible or isadmin() %}
+                            <li{% if endpoint == request.endpoint %} class="active"{% endif %}>
+                                <a href="{{ url_for(endpoint) }}">
+                                    {% if gly != '' %}
+                                        {% if iconlib == 'bootstrap' %}
+                                            <span aria-hidden="true" class="glyphicon glyphicon-{{ gly }}"></span>
+                                        {% elif iconlib == 'fa' %}
+                                            <span aria-hidden="true" class="fa fa-{{ gly }}"></span>
+                                        {% endif %}
+                                    {{ caption }}
+                                    {% endif %}
+                                </a>
+                            </li>
+                        {% endfor %}
+
+                        <li class="navbar-right">
+                            {% if not isadmin() %}
+                            <a href="{{url_for('login', ref=request.url)}}" id="loginpopover" data-container="body" data-toggle="popover" data-placement="bottom">
+                                <span class="glyphicon glyphicon-log-in"></span>
+                                Admin area
+                            </a>
+                            <script>
+                                $('#loginpopover').on('click',function(e){
+                                    e.preventDefault();
+                                }).popover(
+                                        {
+                                            html:true,
+                                            title:'Login',
+                                            content:'<form method="post" action="{{url_for('login', ref=request.values.get('ref', request.url))}}"><input autofocus placeholder="User" name="user" type="text" class="form-control"><input placeholder="Password" name="password" type="password" class="form-control"><br><input type="submit" value="Login" class="btn btn-default"></form>'
+                                        }
+                                        )
+                            </script>
+                            {% else %}
+                            <a href="{{url_for('logout', ref=request.url)}}">
+                                {{ session.user }}
+                                <span class="glyphicon glyphicon-log-out"></span>
+                            </a>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        {% endblock %}
+        <div class="container-fluid" style="margin-bottom: 30px;">
+            <div class="row">
+                {% if page_border == 0 %}
+                <div class="col-xs-12">
+                {% else %}
+                <div class="col-xs-12 col-md-offset-{{ page_border }} col-md-{{ 12-(2*page_border) }}">
+                {% endif %}
+                    {% block alerts %}
+                    {% for msg in get_flashed_messages(category_filter=["message"]) %}
+                    <div class="hidden-print alert alert-danger" role="alert">{{ msg|safe }}</div>
+                    {% endfor %}
+                    {% endblock %}
+                    {% block content %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+        {% block footer %}
+        <footer class="footer hidden-print">
+            <div class="container-fluid">
+                <ul class="list-inline" style="margin-top: 5px;">
+                    <li>
+                        <a href="https://ccc.ac/">CCCAC</a>
+                    </li>
+                    <li>
+                        <a href="https://gitlab.aachen.ccc.de/mukas/mukas">Fork from M.U.K.A.S</a>
+                    </li>
+                </ul>
+            </div>
+        </footer>
+        {% endblock %}
+    </body>
 </html>
