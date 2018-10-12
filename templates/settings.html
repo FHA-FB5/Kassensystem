@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 {% block header %}
-  {{ super() }}
+{{ super() }}
 {% endblock %}
 
 {% block content %}
 <div class="row">
+    <h1 style="text-align: center;">Import users</h1>
     <div id="outwrapper">
       <form method="post" action="">
-        <input type="submit" class ="btn" value="Importieren">
+        <input type="submit" class ="btn" value="Import">
         {% for student in tstudents %}
         <div id="namewrapper">
             {{ student.name }}

@@ -366,7 +366,7 @@ def editgroup(groupid):
 @admin_required
 def listing():
     users=query('SELECT * FROM user')
-    bought=query('SELECT item.name as itemname, bought.count as count FROM bought JOIN item ON item.id = bought.item_id')
+    bought=query('SELECT item.name as itemname, bought.count as count, item.price as itemprice FROM bought JOIN item ON item.id = bought.item_id')
     return render_template('listing.html', itemsbought=bought)
 
 @app.route("/u/<name>")

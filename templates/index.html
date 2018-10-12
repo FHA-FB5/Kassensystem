@@ -10,6 +10,16 @@
           <button class="btn btn-default" data-toggle="modal" data-target="#addusermodal">
             Add user
           </button>
+          <a href="{{ url_for('settings') }}">
+              <button class="btn btn-default">
+                  Import user
+              </button>
+          </a>
+          <a href="{{ url_for('listing') }}">
+         <button class="btn btn-default">
+             List items
+         </button>
+          </a>
         </div>
       {% endif %}
 
