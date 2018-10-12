@@ -44,24 +44,13 @@
             {% endif %}
 
             <div class="row" style="margin-top: 10px;">
-              <div class="col-xs-3">
-                <span id="userbalance" data-level="{% if (user.balance < -2000) %}bad{% elif (user.balance < 0) %}negative{% elif (user.balance >= 0) %}positive{% else %}great{% endif %}">{{ user.balance|euro }}</span>
-              </div>
-              <div class="col-xs-9">
-                <details style="margin-left: -15px;">
-                    <summary>
-                        <button class="btn btn-default">
-                            Show log
-                        </button>
-                    </summary>
-
+              <div class="col-xs-12">
                     <div id="userlogdiv" style="overflow-y: scroll; max-height: 150px;
                             height: 150px;
                              border-top: 1px solid rgba(255, 255, 255, 0.1);
                              border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                       {{ loglist(log, user) }}
                     </div>
-                </details>
               </div>
             </div>
         </div>

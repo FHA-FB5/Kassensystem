@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block header %}
+{{ super() }}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div id="outwrapper">
+       {% for item in itemsbought %}
+         <div id="namewrapper">
+            <h1>{{ item.itemname }}: {{ item.count }}</h1>
+         </div>
+       {% endfor %}
+    </div>
+</div>
+{% endblock %}

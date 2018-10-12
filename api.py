@@ -184,6 +184,7 @@ def api_user_buy(name, itemid):
     price = itemprice(itemidtoobj(itemid))
     if user:
         query('UPDATE user SET balance = balance - ? WHERE name = ?', price, name)
+        query('UPDATE bought SET count = count + 1 WHERE item_id = ?', itemid)
         usernew = query('SELECT * FROM user WHERE name = ?', name)[0]
         if price > 0:
             log_action(user['id'], user['balance'], usernew['balance'], 'buy', itemid)
@@ -226,7 +227,7 @@ def date_json_handler(obj):
 @app.route("/api/user/<name>/log")
 def api_user_log(name):
     resulttype = request.values.get('type', 'html')
-    log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 50', name)
+    log=query('SELECT item.name as itemname, COUNT(log.parameter) AS cu, log.parameter as itemid FROM log JOIN user ON log.user_id=user.id JOIN item ON itemid = item.id WHERE (user.name = ?) GROUP BY log.parameter', name)
     user=query('SELECT * from user WHERE name = ?', name)[0]
     if resulttype == 'json':
         return json.dumps(log, default=date_json_handler)

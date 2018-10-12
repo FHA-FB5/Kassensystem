@@ -1,7 +1,7 @@
 {% macro loglist(entries, user) %}
-	<ul class="list-unstyled">
-	{% for i in entries %}
-		<li class="logentry">{{ logentrytotext(i, user)|safe }}</li></li>
-	{% endfor %}
-	</ul>
+  <ul class="list-unstyled">
+  {% for i in entries %}
+      <li class="logentry"><h3>{{ i.itemname }}: {{ i.cu }}</h3></li></li>
+  {% endfor %}
+  </ul>
 {% endmacro %}
