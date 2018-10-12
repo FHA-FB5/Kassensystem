@@ -82,7 +82,7 @@ def logentrytotext(inputentry, user, html=True, short=False):
 
     desc = 'something is broken: '+json.dumps(entry, default=date_json_handler)
     if entry['method'] == "buy":
-        desc = 'bought {} for {}'.format(itemidtoobj(entry['parameter'])['name'], euro(itemprice(itemidtoobj(entry['parameter']))))
+        desc = 'bought {}'.format(itemidtoobj(entry['parameter'])['name'])
     elif entry['method'] == "recharge":
         desc = 'recharged balance with {}'.format(euro(abs(itemprice(itemidtoobj(entry['parameter'])))))
     elif entry['method'] == "set_balance":
@@ -317,6 +317,7 @@ def edititem(itemid):
             query("UPDATE item SET name = ?, group_id = ?, purchasingprice = ?, price = ?, info_public = ?, picture_id = ? WHERE id = ?", *args, itemid)
         else:
             newid = modify("INSERT INTO item (name, group_id, purchasingprice, price, info_public, picture_id) VALUES (?, ?, ?, ?, ?, ?)", *args)
+            query("INSERT INTO bought (item_id, count) VALUES (?, 0)", newid)
 
     if 'action' in request.values:
         if (request.values.get('action', 'save') == 'save'):
@@ -371,7 +372,7 @@ def userpage(name=None, id=None):
     else:
         user = user[0]
     users=query('SELECT * FROM user')
-    log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 50', user['name'])
+    log=query('SELECT log.* FROM log JOIN user ON log.user_id=user.id WHERE (user.name = ?)  ORDER BY log.time DESC LIMIT 200', user['name'])
     groups=query('SELECT * FROM "group" ORDER BY sortorder ')
     items=query('SELECT item.*, (SELECT count(log.id) FROM log WHERE user_id = ? AND method = "buy" AND parameter = item.id AND time > ?) as buycount FROM "item" WHERE deleted=0 ', user['id'], datetime.datetime.now() - datetime.timedelta(days=60))
     return render_template('user.html', user=user, log=log, groups=groups, items=items, users=users )

@@ -46,5 +46,9 @@ CREATE TABLE IF NOT EXISTS 'barcode' (
     type        varchar(255) default 'item',
     parameter    integer default -1
 );
+CREATE TABLE IF NOT EXISTS 'bought' (
+    item_id      integer,
+    count        integer default 0
+);
 
 COMMIT
