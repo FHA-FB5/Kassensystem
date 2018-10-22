@@ -278,7 +278,8 @@ def log_action(userid, old, new, method, parameter, reason=None):
 @register_navbar('User', icon='user', iconlib='fa', visible=True)
 @app.route("/")
 def index():
-    return render_template('index.html', allusers=query('SELECT * FROM user WHERE deleted=0'))
+    query_str = 'SELECT * FROM user WHERE deleted=0 ';
+    return render_template('index.html', allusers=query(query_str), students=query(query_str + 'AND is_major=0'), majors=query(query_str + 'AND is_major=1'))
 
 @register_navbar('Items', icon='list', iconlib='fa', visible=True)
 @app.route("/items")
@@ -365,9 +366,9 @@ def editgroup(groupid):
 @app.route("/listing")
 @admin_required
 def listing():
-    users=query('SELECT * FROM user')
+    useritems=query('SELECT user.name as uname, item.name as iname, item.price, COUNT(item.id) as cnt FROM user JOIN log ON user.id = log.user_id JOIN item ON item.id = log.parameter GROUP BY uname, iname')
     bought=query('SELECT item.name as itemname, bought.count as count, item.price as itemprice FROM bought JOIN item ON item.id = bought.item_id')
-    return render_template('listing.html', itemsbought=bought)
+    return render_template('listing.html', itemsbought=bought, users=useritems)
 
 @app.route("/u/<name>")
 @app.route("/u/<int:id>")
@@ -436,8 +437,9 @@ def settings(**kwargs):
             if v.isnumeric() and request.form.get(v):
                 stud = students[int(v)]
                 newId = api.import_image(stud['image_path'])
+                is_major = True if request.form.get(v + "-is_major") else False
                 query("INSERT OR REPLACE INTO user (name, picture_id," +
-                      "allow_logging) VALUES (?, ?, ?)",
-                      stud['name'], newId, True)
+                      "allow_logging, is_major) VALUES (?, ?, ?, ?)",
+                      stud['name'], newId, True, is_major)
         return redirect("/")
     return render_template('settings.html', tstudents=students, **kwargs)

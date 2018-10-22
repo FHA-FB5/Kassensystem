@@ -8,11 +8,15 @@
     <h1 style="text-align: center;">Import users</h1>
     <div id="outwrapper">
       <form method="post" action="">
-        <input type="submit" class ="btn" value="Import">
+          <input type="submit" class ="btn" value="Import">
+          <div style="float: right;">
+              Import | IsTutor
+          </div>
         {% for student in tstudents %}
         <div id="namewrapper">
             {{ student.name }}
-            <input class="check" name="{{ student.id }}"
+            <input class="check" name="{{ student.id }}-is_major" type="checkbox">
+            <input class="check" name="{{ student.id }}" style="margin: 4px 5px 5px auto"
                    type="checkbox" checked="">
         </div>
         {% endfor %}

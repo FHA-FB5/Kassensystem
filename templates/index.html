@@ -16,19 +16,35 @@
               </button>
           </a>
           <a href="{{ url_for('listing') }}">
-         <button class="btn btn-default">
-             List items
-         </button>
+              <button class="btn btn-default">
+                  List items
+              </button>
           </a>
         </div>
-      {% endif %}
-
-  {% for u in allusers|sort(attribute='name') %}
+        {% endif %}
+        <div class="col-xs-12">
+             <h2 id="anker_students">Students:</h2>
+        </div>
+  {% for u in students|sort(attribute='name') %}
   <a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
     <div class="boximage" style="{% if u.picture_id %}background-image: url('{{ url_for('get_img', imgid=u.picture_id) }}');{% endif %}" ></div>
     <div class="boxspan">
-      <span style="font-weight: 900; margin-top: 5px;">{{ u.name }}</span>
+        <span style="font-weight: 900; margin-top: 5px;">{{ u.name }}</span>
     </div>
+  </a>
+  {% endfor %}
+
+
+  <div class="col-xs-12">
+      <h2 id="anker_majors">Tutors:</h2>
+  </div>
+
+  {% for u in majors|sort(attribute='name') %}
+  <a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
+      <div class="boximage" style="{% if u.picture_id %}background-image: url('{{ url_for('get_img', imgid=u.picture_id) }}');{% endif %}" ></div>
+      <div class="boxspan">
+          <span style="font-weight: 900; margin-top: 5px;">{{ u.name }}</span>
+      </div>
   </a>
   {% endfor %}
 </div>

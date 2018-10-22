@@ -25,7 +25,7 @@
     </head>
     <body>
     {% block navbar %}
-        <nav class="hidden-print navbar navbar-default Add .navbar-fixed-top navbar-inverse">
+        <nav class="hidden-print navbar navbar-default Add .navbar-fixed-top navbar-inverse" style="position: fixed; top: 0; width: 100%; z-index: 999;">
             <div class="container-fluid">
                 <div class="navbar-header">
                     <button type="button" class="navbar-toggle" data-toggle="collapse"
@@ -57,7 +57,21 @@
                                     {% endif %}
                                 </a>
                             </li>
-                        {% endfor %}
+                            {% endfor %}
+                          <li>
+                                <a href="#anker_students">
+                                    <button class="btn btn-default">
+                                        Student
+                                    </button>
+                                </a>
+                          </li>
+                          <li>
+                                <a href="#anker_majors">
+                                    <button class="btn btn-default">
+                                        Tutor
+                                    </button>
+                                </a>
+                          </li>
 
                         <li class="navbar-right">
                             {% if not isadmin() %}
