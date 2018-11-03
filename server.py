@@ -191,6 +191,14 @@ def euro(val, symbol=True):
         return '{:.2f}'.format(val/100)
 
 @app.template_filter()
+def starts_with(word, letter):
+    return word.startswith(str(chr(letter)))
+
+@app.template_filter()
+def to_char(val):
+    return str(chr(val))
+
+@app.template_filter()
 def itemprice(item):
     if not item:
         return -1

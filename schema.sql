@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS 'user' (
     deleted            boolean not null default 0 check (deleted IN (0,1)),
     transaction_mail    boolean not NULL default 0 CHECK (transaction_mail IN (0,1)),
     allow_logging        boolean not NULL default 0 CHECK (allow_logging IN (0,1)),
-    sort_by_buycount    boolean not NULL default 0 CHECK (sort_by_buycount IN (0,1))
+    sort_by_buycount    boolean not NULL default 0 CHECK (sort_by_buycount IN (0,1)),
+    is_major            boolean not NULL default 0
 );
 CREATE TABLE IF NOT EXISTS 'item' (
     id        integer primary key autoincrement,

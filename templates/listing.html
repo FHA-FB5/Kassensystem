@@ -9,12 +9,12 @@
     <div id="outwrapper">
         <div class="row">
         {% for item in itemsbought %}
-            <h3>{{ item.itemname }}: {{ item.count }}x, Price: {{ item.itemprice/100 }}&euro;, Sum: {{ (item.itemprice * item.count)/100 }}&euro;</h3>
+            <h3>{{ item.itemname }}: {{ item.count }}x, Price: {{ item.itemprice | euro }}, Sum: {{ (item.itemprice * item.count) | euro }}</h3>
         {% endfor %}
         </div>
         {% for user in users %}
         <div class="row">
-            {{ user.uname }}, {{ user.iname }}: {{ user.cnt }}, Price: {{ (user.price/100) * user.cnt }}&euro;
+            {{ user.uname }}, {{ user.iname }}: {{ user.cnt }}, Price: {{ (user.price * user.cnt) | euro }}
         </div>
         {% endfor %}
     </div>

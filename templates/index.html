@@ -23,16 +23,21 @@
         </div>
         {% endif %}
         <div class="col-xs-12">
-             <h2 id="anker_students">Students:</h2>
+            <h2 id="anker_students">Students:</h2>
         </div>
-  {% for u in students|sort(attribute='name') %}
-  <a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
-    <div class="boximage" style="{% if u.picture_id %}background-image: url('{{ url_for('get_img', imgid=u.picture_id) }}');{% endif %}" ></div>
-    <div class="boxspan">
-        <span style="font-weight: 900; margin-top: 5px;">{{ u.name }}</span>
-    </div>
-  </a>
-  {% endfor %}
+        {% for i in range(26) %}
+          <h1 style="width: 100%; display: inline-block; margin-left: 5px;">{{ (i + 65) | to_char }}</h1>
+            {% for u in students|sort(attribute='name') %}
+              {% if (u.name | starts_with(i + 65)) %}
+                <a id="user_{{ u.id }}" class="col-xs-1 box" data-userid="{{ u.id }}" href="{{ url_for('userpage', id=u.id) }}">
+                  <div class="boximage" style="{% if u.picture_id %}background-image: url('{{ url_for('get_img', imgid=u.picture_id) }}');{% endif %}" ></div>
+                    <div class="boxspan">
+                    <span style="font-weight: 900; margin-top: 5px;">{{ u.name }}</span>
+                  </div>
+                </a>
+               {% endif %}
+            {% endfor %}
+        {% endfor %}
 
 
   <div class="col-xs-12">

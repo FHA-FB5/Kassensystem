@@ -3,7 +3,8 @@
 {% block title %}: {{ user.name }}{% endblock %}
 
 {% block header %}
-    {{ super() }}
+{{ super() }}
+<meta http-equiv="refresh" content="30; URL=/">
     <script>
         $(document).ready(function() {
         /* Always keep a list of the 6 most recently visited user pages */
