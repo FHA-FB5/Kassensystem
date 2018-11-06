@@ -15,7 +15,7 @@
         {% for student in tstudents %}
         <div id="namewrapper">
             {{ student.name }}
-            <input class="check" name="{{ student.id }}-is_major" type="checkbox">
+            <input class="check" name="{{ student.id }}-is_major" {% if student.tutor %}checked=""{% endif %} type="checkbox">
             <input class="check" name="{{ student.id }}" style="margin: 4px 5px 5px auto"
                    type="checkbox" checked="">
         </div>

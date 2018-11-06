@@ -4,6 +4,7 @@ import sqlite3
 import hashlib
 import locale
 import random
+import logging
 import string
 import os
 from os.path import join, abspath, dirname
@@ -17,7 +18,6 @@ import queue
 import datetime
 import pprint
 from typing import List
-
 locale.setlocale(locale.LC_ALL, 'de_DE.utf8')
 
 ROOT_DIR = dirname(abspath(__file__))
@@ -35,10 +35,11 @@ config['SECRET_KEY'] = os.urandom(32)
 class Student:
 
     def __init__(self, student_id: int, name: str,
-                 major: str, image_path: str):
+                 major: str, image_path: str, tutor: bool):
         self.id = student_id
         self.name = name
         self.major = major
+        self.tutor = tutor
         self.image_path = image_path
 
 
@@ -428,8 +429,11 @@ def getStudents():
     students = list()
     for index, image in enumerate(images):
         *name, major = image.split('.')[0].split('_')
+        fullname = ' '.join(name)
+        is_tutor = []
+        is_tutor = query("SELECT is_major FROM user WHERE name = ?", fullname)
         student = Student(index, ' '.join(name),
-                          major, f'static/students/{image}')
+                          major, f'static/students/{image}', is_tutor[0]['is_major'] if len(is_tutor) > 0 else False)
         students.append(student.__dict__)
     return students
 
@@ -445,13 +449,14 @@ def settings(**kwargs):
             if v.isnumeric() and request.form.get(v):
                 stud = students[int(v)]
                 newId = api.import_image(stud['image_path'])
+                logging.warning(newId)
                 is_major = True if request.form.get(v + "-is_major") else False
+                studToUpdate = []
                 studToUpdate = query("SELECT * FROM user WHERE user.name = ?", stud['name'])
-                if studToUpdate != None:
+                if len(studToUpdate) > 0:
                     query("UPDATE user SET picture_id = ?, is_major = ? WHERE name = ?", newId, is_major, stud['name'])
                 else:
-                    query("INSERT OR REPLACE INTO user (name, picture_id," +
-                          "allow_logging, is_major) VALUES (?, ?, ?, ?)",
+                    query("INSERT INTO user (name, picture_id, allow_logging, is_major) VALUES (?, ?, ?, ?)",
                     stud['name'], newId, True, is_major)
         return redirect("/")
     return render_template('settings.html', tstudents=students, **kwargs)
