@@ -446,8 +446,12 @@ def settings(**kwargs):
                 stud = students[int(v)]
                 newId = api.import_image(stud['image_path'])
                 is_major = True if request.form.get(v + "-is_major") else False
-                query("INSERT OR REPLACE INTO user (name, picture_id," +
-                      "allow_logging, is_major) VALUES (?, ?, ?, ?)",
-                      stud['name'], newId, True, is_major)
+                studToUpdate = query("SELECT * FROM user WHERE user.name = ?", stud['name'])
+                if studToUpdate != None:
+                    query("UPDATE user SET picture_id = ?, is_major = ? WHERE name = ?", newId, is_major, stud['name'])
+                else:
+                    query("INSERT OR REPLACE INTO user (name, picture_id," +
+                          "allow_logging, is_major) VALUES (?, ?, ?, ?)",
+                    stud['name'], newId, True, is_major)
         return redirect("/")
     return render_template('settings.html', tstudents=students, **kwargs)
