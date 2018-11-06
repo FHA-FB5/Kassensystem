@@ -166,8 +166,9 @@ def admin_required(func):
     def decorator(*args, **kwargs):
         if not isadmin():
             flash('You need to be logged in to do that!')
-            return redirect(url_for('login', ref=request.url))
-
+            logging.warning(url_for('login'))
+            logging.warning(request.url)
+            return redirect(url_for('login'))
         else:
             return func(*args, **kwargs)
     return decorator
