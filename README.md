@@ -14,3 +14,6 @@ A Makefile is available for installation and operation.
 `make install` installs all dependencies into a virtual environment.
 
 `make run` then executes the system.
+
+# Contributing
+General contribution guidelines can be found in the [docs repository](https://github.com/FHA-FB5/docs/blob/master/README.md)
